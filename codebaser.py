@@ -60,7 +60,7 @@ class InfoDialog(CustomDialog):
         super().__init__(parent, colors)
         self.dialog.title(title)
         
-        # Configure dialog grid
+        # Configure dialog grid with centered content
         self.dialog.grid_columnconfigure(0, weight=1)
         
         # Header
@@ -78,24 +78,25 @@ class InfoDialog(CustomDialog):
             anchor='center'
         ).grid(row=0, column=0, sticky="ew", padx=20, pady=15)
         
-        # Message content
+        # Message content - centered with uniform margins
         content_frame = tk.Frame(self.dialog, bg=self.colors['background'])
-        content_frame.grid(row=1, column=0, sticky="ew", padx=30, pady=(0, 20))
+        content_frame.grid(row=1, column=0, sticky="ew", padx=40, pady=(0, 20))
         content_frame.grid_columnconfigure(0, weight=1)
         
-        # Main message
+        # Main message - centered text with word wrapping
         message_label = tk.Label(
             content_frame,
             text=message,
             font=('Segoe UI', 11),
             bg=self.colors['background'],
             fg=self.colors['accent'],
-            wraplength=400,
-            justify=tk.LEFT
+            wraplength=380,  # Reduced to account for padding
+            justify=tk.CENTER,
+            anchor='center'
         )
-        message_label.grid(row=0, column=0, sticky="w", pady=(0, 10))
+        message_label.grid(row=0, column=0, sticky="ew", pady=(0, 10))
         
-        # Details if provided
+        # Details if provided - centered text
         if details:
             details_label = tk.Label(
                 content_frame,
@@ -103,19 +104,23 @@ class InfoDialog(CustomDialog):
                 font=('Segoe UI', 9),
                 bg=self.colors['background'],
                 fg=self.colors['text_secondary'],
-                wraplength=400,
-                justify=tk.LEFT
+                wraplength=380,  # Reduced to account for padding
+                justify=tk.CENTER,
+                anchor='center'
             )
-            details_label.grid(row=1, column=0, sticky="w", pady=(5, 15))
+            details_label.grid(row=1, column=0, sticky="ew", pady=(5, 15))
         
-        # Button frame
+        # Button frame - centered
         button_frame = tk.Frame(self.dialog, bg=self.colors['background'])
-        button_frame.grid(row=2, column=0, sticky="ew", padx=30, pady=(0, 20))
+        button_frame.grid(row=2, column=0, sticky="ew", padx=40, pady=(0, 20))
         button_frame.grid_columnconfigure(0, weight=1)
         
-        # OK button
+        # OK button - centered
+        button_container = tk.Frame(button_frame, bg=self.colors['background'])
+        button_container.pack(expand=True)
+        
         ok_button = tk.Button(
-            button_frame,
+            button_container,
             text="OK",
             font=('Segoe UI', 10, 'bold'),
             bg=self.colors['primary'],
@@ -156,7 +161,7 @@ class WarningDialog(CustomDialog):
         super().__init__(parent, colors)
         self.dialog.title(title)
         
-        # Configure dialog grid
+        # Configure dialog grid with centered content
         self.dialog.grid_columnconfigure(0, weight=1)
         
         # Header
@@ -174,24 +179,25 @@ class WarningDialog(CustomDialog):
             anchor='center'
         ).grid(row=0, column=0, sticky="ew", padx=20, pady=15)
         
-        # Message content
+        # Message content - centered with uniform margins
         content_frame = tk.Frame(self.dialog, bg=self.colors['background'])
-        content_frame.grid(row=1, column=0, sticky="ew", padx=30, pady=(0, 20))
+        content_frame.grid(row=1, column=0, sticky="ew", padx=40, pady=(0, 20))
         content_frame.grid_columnconfigure(0, weight=1)
         
-        # Main message
+        # Main message - centered text with word wrapping
         message_label = tk.Label(
             content_frame,
             text=message,
             font=('Segoe UI', 11),
             bg=self.colors['background'],
             fg=self.colors['accent'],
-            wraplength=400,
-            justify=tk.LEFT
+            wraplength=380,  # Reduced to account for padding
+            justify=tk.CENTER,
+            anchor='center'
         )
-        message_label.grid(row=0, column=0, sticky="w", pady=(0, 10))
+        message_label.grid(row=0, column=0, sticky="ew", pady=(0, 10))
         
-        # Details if provided
+        # Details if provided - centered text
         if details:
             details_label = tk.Label(
                 content_frame,
@@ -199,19 +205,23 @@ class WarningDialog(CustomDialog):
                 font=('Segoe UI', 9),
                 bg=self.colors['background'],
                 fg=self.colors['text_secondary'],
-                wraplength=400,
-                justify=tk.LEFT
+                wraplength=380,  # Reduced to account for padding
+                justify=tk.CENTER,
+                anchor='center'
             )
-            details_label.grid(row=1, column=0, sticky="w", pady=(5, 15))
+            details_label.grid(row=1, column=0, sticky="ew", pady=(5, 15))
         
-        # Button frame
+        # Button frame - centered
         button_frame = tk.Frame(self.dialog, bg=self.colors['background'])
-        button_frame.grid(row=2, column=0, sticky="ew", padx=30, pady=(0, 20))
+        button_frame.grid(row=2, column=0, sticky="ew", padx=40, pady=(0, 20))
         button_frame.grid_columnconfigure(0, weight=1)
         
-        # OK button
+        # OK button - centered
+        button_container = tk.Frame(button_frame, bg=self.colors['background'])
+        button_container.pack(expand=True)
+        
         ok_button = tk.Button(
-            button_frame,
+            button_container,
             text="OK",
             font=('Segoe UI', 10, 'bold'),
             bg=self.colors['primary'],
@@ -252,7 +262,7 @@ class ErrorDialog(CustomDialog):
         super().__init__(parent, colors)
         self.dialog.title(title)
         
-        # Configure dialog grid
+        # Configure dialog grid with centered content
         self.dialog.grid_columnconfigure(0, weight=1)
         
         # Header
@@ -270,24 +280,25 @@ class ErrorDialog(CustomDialog):
             anchor='center'
         ).grid(row=0, column=0, sticky="ew", padx=20, pady=15)
         
-        # Message content
+        # Message content - centered with uniform margins
         content_frame = tk.Frame(self.dialog, bg=self.colors['background'])
-        content_frame.grid(row=1, column=0, sticky="ew", padx=30, pady=(0, 20))
+        content_frame.grid(row=1, column=0, sticky="ew", padx=40, pady=(0, 20))
         content_frame.grid_columnconfigure(0, weight=1)
         
-        # Main message
+        # Main message - centered text with word wrapping
         message_label = tk.Label(
             content_frame,
             text=message,
             font=('Segoe UI', 11),
             bg=self.colors['background'],
             fg=self.colors['accent'],
-            wraplength=400,
-            justify=tk.LEFT
+            wraplength=380,  # Reduced to account for padding
+            justify=tk.CENTER,
+            anchor='center'
         )
-        message_label.grid(row=0, column=0, sticky="w", pady=(0, 10))
+        message_label.grid(row=0, column=0, sticky="ew", pady=(0, 10))
         
-        # Details if provided
+        # Details if provided - centered text
         if details:
             details_label = tk.Label(
                 content_frame,
@@ -295,19 +306,23 @@ class ErrorDialog(CustomDialog):
                 font=('Segoe UI', 9),
                 bg=self.colors['background'],
                 fg=self.colors['text_secondary'],
-                wraplength=400,
-                justify=tk.LEFT
+                wraplength=380,  # Reduced to account for padding
+                justify=tk.CENTER,
+                anchor='center'
             )
-            details_label.grid(row=1, column=0, sticky="w", pady=(5, 15))
+            details_label.grid(row=1, column=0, sticky="ew", pady=(5, 15))
         
-        # Button frame
+        # Button frame - centered
         button_frame = tk.Frame(self.dialog, bg=self.colors['background'])
-        button_frame.grid(row=2, column=0, sticky="ew", padx=30, pady=(0, 20))
+        button_frame.grid(row=2, column=0, sticky="ew", padx=40, pady=(0, 20))
         button_frame.grid_columnconfigure(0, weight=1)
         
-        # OK button
+        # OK button - centered
+        button_container = tk.Frame(button_frame, bg=self.colors['background'])
+        button_container.pack(expand=True)
+        
         ok_button = tk.Button(
-            button_frame,
+            button_container,
             text="OK",
             font=('Segoe UI', 10, 'bold'),
             bg=self.colors['primary'],
@@ -348,7 +363,7 @@ class ConfirmDialog(CustomDialog):
         super().__init__(parent, colors)
         self.dialog.title(title)
         
-        # Configure dialog grid
+        # Configure dialog grid with centered content
         self.dialog.grid_columnconfigure(0, weight=1)
         
         # Header
@@ -366,24 +381,25 @@ class ConfirmDialog(CustomDialog):
             anchor='center'
         ).grid(row=0, column=0, sticky="ew", padx=20, pady=15)
         
-        # Message content
+        # Message content - centered with uniform margins
         content_frame = tk.Frame(self.dialog, bg=self.colors['background'])
-        content_frame.grid(row=1, column=0, sticky="ew", padx=30, pady=(0, 20))
+        content_frame.grid(row=1, column=0, sticky="ew", padx=40, pady=(0, 20))
         content_frame.grid_columnconfigure(0, weight=1)
         
-        # Main message
+        # Main message - centered text with word wrapping
         message_label = tk.Label(
             content_frame,
             text=message,
             font=('Segoe UI', 11),
             bg=self.colors['background'],
             fg=self.colors['accent'],
-            wraplength=400,
-            justify=tk.LEFT
+            wraplength=380,  # Reduced to account for padding
+            justify=tk.CENTER,
+            anchor='center'
         )
-        message_label.grid(row=0, column=0, sticky="w", pady=(0, 10))
+        message_label.grid(row=0, column=0, sticky="ew", pady=(0, 10))
         
-        # Details if provided
+        # Details if provided - centered text
         if details:
             details_label = tk.Label(
                 content_frame,
@@ -391,20 +407,24 @@ class ConfirmDialog(CustomDialog):
                 font=('Segoe UI', 9),
                 bg=self.colors['background'],
                 fg=self.colors['text_secondary'],
-                wraplength=400,
-                justify=tk.LEFT
+                wraplength=380,  # Reduced to account for padding
+                justify=tk.CENTER,
+                anchor='center'
             )
-            details_label.grid(row=1, column=0, sticky="w", pady=(5, 15))
+            details_label.grid(row=1, column=0, sticky="ew", pady=(5, 15))
         
-        # Button frame
+        # Button frame - centered
         button_frame = tk.Frame(self.dialog, bg=self.colors['background'])
-        button_frame.grid(row=2, column=0, sticky="ew", padx=30, pady=(0, 20))
+        button_frame.grid(row=2, column=0, sticky="ew", padx=40, pady=(0, 20))
         button_frame.grid_columnconfigure(0, weight=1)
-        button_frame.grid_columnconfigure(1, weight=1)
+        
+        # Center buttons container
+        button_container = tk.Frame(button_frame, bg=self.colors['background'])
+        button_container.pack(expand=True)
         
         # Yes button
         yes_button = tk.Button(
-            button_frame,
+            button_container,
             text="Yes",
             font=('Segoe UI', 10, 'bold'),
             bg=self.colors['primary'],
@@ -416,11 +436,11 @@ class ConfirmDialog(CustomDialog):
             command=self._on_yes,
             width=12
         )
-        yes_button.grid(row=0, column=0, padx=(0, 10), pady=5, ipadx=15, ipady=6)
+        yes_button.pack(side=tk.LEFT, padx=(0, 10), pady=5, ipadx=15, ipady=6)
         
         # No button
         no_button = tk.Button(
-            button_frame,
+            button_container,
             text="No",
             font=('Segoe UI', 10, 'bold'),
             bg=self.colors['divider'],
@@ -432,7 +452,7 @@ class ConfirmDialog(CustomDialog):
             command=self._on_no,
             width=12
         )
-        no_button.grid(row=0, column=1, padx=(10, 0), pady=5, ipadx=15, ipady=6)
+        no_button.pack(side=tk.LEFT, padx=(10, 0), pady=5, ipadx=15, ipady=6)
         
         # Set focus to Yes button
         yes_button.focus_set()
