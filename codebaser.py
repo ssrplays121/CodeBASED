@@ -10,6 +10,459 @@ import time
 import signal
 import atexit
 
+
+class CustomDialog:
+    """Base class for custom dialog boxes following the app theme."""
+    
+    def __init__(self, parent, colors):
+        self.parent = parent
+        self.colors = colors
+        self.result = None
+        
+        # Create top level window
+        self.dialog = tk.Toplevel(parent)
+        self.dialog.title("")
+        self.dialog.configure(bg=self.colors['background'])
+        self.dialog.resizable(False, False)
+        self.dialog.transient(parent)
+        self.dialog.grab_set()
+        
+        # Make dialog modal
+        self.dialog.focus_set()
+        self.dialog.protocol("WM_DELETE_WINDOW", self._on_close)
+        
+    def _on_close(self):
+        """Handle dialog close."""
+        self.result = False
+        self.dialog.destroy()
+        
+    def center_on_parent(self):
+        """Center the dialog on the parent window."""
+        self.dialog.update_idletasks()
+        parent_x = self.parent.winfo_rootx()
+        parent_y = self.parent.winfo_rooty()
+        parent_width = self.parent.winfo_width()
+        parent_height = self.parent.winfo_height()
+        
+        dialog_width = self.dialog.winfo_width()
+        dialog_height = self.dialog.winfo_height()
+        
+        x = parent_x + (parent_width - dialog_width) // 2
+        y = parent_y + (parent_height - dialog_height) // 2
+        
+        self.dialog.geometry(f"{dialog_width}x{dialog_height}+{x}+{y}")
+
+
+class InfoDialog(CustomDialog):
+    """Custom information dialog."""
+    
+    def __init__(self, parent, colors, title, message, details=None):
+        super().__init__(parent, colors)
+        self.dialog.title(title)
+        
+        # Configure dialog grid
+        self.dialog.grid_columnconfigure(0, weight=1)
+        
+        # Header
+        header_frame = tk.Frame(self.dialog, bg=self.colors['primary'], height=50)
+        header_frame.grid(row=0, column=0, sticky="ew", padx=0, pady=(0, 20))
+        header_frame.grid_propagate(False)
+        header_frame.grid_columnconfigure(0, weight=1)
+        
+        tk.Label(
+            header_frame,
+            text="ℹ️  " + title,
+            font=('Segoe UI', 14, 'bold'),
+            bg=self.colors['primary'],
+            fg=self.colors['background'],
+            anchor='center'
+        ).grid(row=0, column=0, sticky="ew", padx=20, pady=15)
+        
+        # Message content
+        content_frame = tk.Frame(self.dialog, bg=self.colors['background'])
+        content_frame.grid(row=1, column=0, sticky="ew", padx=30, pady=(0, 20))
+        content_frame.grid_columnconfigure(0, weight=1)
+        
+        # Main message
+        message_label = tk.Label(
+            content_frame,
+            text=message,
+            font=('Segoe UI', 11),
+            bg=self.colors['background'],
+            fg=self.colors['accent'],
+            wraplength=400,
+            justify=tk.LEFT
+        )
+        message_label.grid(row=0, column=0, sticky="w", pady=(0, 10))
+        
+        # Details if provided
+        if details:
+            details_label = tk.Label(
+                content_frame,
+                text=details,
+                font=('Segoe UI', 9),
+                bg=self.colors['background'],
+                fg=self.colors['text_secondary'],
+                wraplength=400,
+                justify=tk.LEFT
+            )
+            details_label.grid(row=1, column=0, sticky="w", pady=(5, 15))
+        
+        # Button frame
+        button_frame = tk.Frame(self.dialog, bg=self.colors['background'])
+        button_frame.grid(row=2, column=0, sticky="ew", padx=30, pady=(0, 20))
+        button_frame.grid_columnconfigure(0, weight=1)
+        
+        # OK button
+        ok_button = tk.Button(
+            button_frame,
+            text="OK",
+            font=('Segoe UI', 10, 'bold'),
+            bg=self.colors['primary'],
+            fg=self.colors['background'],
+            activebackground=self.colors['secondary'],
+            activeforeground=self.colors['background'],
+            relief=tk.FLAT,
+            cursor='hand2',
+            command=self._on_ok,
+            width=15
+        )
+        ok_button.pack(pady=5, ipadx=20, ipady=6)
+        
+        # Set focus to OK button
+        ok_button.focus_set()
+        self.dialog.bind('<Return>', lambda e: self._on_ok())
+        self.dialog.bind('<Escape>', lambda e: self._on_close())
+        
+        # Center and show
+        self.dialog.update_idletasks()
+        self.center_on_parent()
+        
+    def _on_ok(self):
+        """Handle OK button click."""
+        self.result = True
+        self.dialog.destroy()
+        
+    def show(self):
+        """Show the dialog and wait for response."""
+        self.parent.wait_window(self.dialog)
+        return self.result
+
+
+class WarningDialog(CustomDialog):
+    """Custom warning dialog."""
+    
+    def __init__(self, parent, colors, title, message, details=None):
+        super().__init__(parent, colors)
+        self.dialog.title(title)
+        
+        # Configure dialog grid
+        self.dialog.grid_columnconfigure(0, weight=1)
+        
+        # Header
+        header_frame = tk.Frame(self.dialog, bg=self.colors['warning'], height=50)
+        header_frame.grid(row=0, column=0, sticky="ew", padx=0, pady=(0, 20))
+        header_frame.grid_propagate(False)
+        header_frame.grid_columnconfigure(0, weight=1)
+        
+        tk.Label(
+            header_frame,
+            text="⚠️  " + title,
+            font=('Segoe UI', 14, 'bold'),
+            bg=self.colors['warning'],
+            fg=self.colors['background'],
+            anchor='center'
+        ).grid(row=0, column=0, sticky="ew", padx=20, pady=15)
+        
+        # Message content
+        content_frame = tk.Frame(self.dialog, bg=self.colors['background'])
+        content_frame.grid(row=1, column=0, sticky="ew", padx=30, pady=(0, 20))
+        content_frame.grid_columnconfigure(0, weight=1)
+        
+        # Main message
+        message_label = tk.Label(
+            content_frame,
+            text=message,
+            font=('Segoe UI', 11),
+            bg=self.colors['background'],
+            fg=self.colors['accent'],
+            wraplength=400,
+            justify=tk.LEFT
+        )
+        message_label.grid(row=0, column=0, sticky="w", pady=(0, 10))
+        
+        # Details if provided
+        if details:
+            details_label = tk.Label(
+                content_frame,
+                text=details,
+                font=('Segoe UI', 9),
+                bg=self.colors['background'],
+                fg=self.colors['text_secondary'],
+                wraplength=400,
+                justify=tk.LEFT
+            )
+            details_label.grid(row=1, column=0, sticky="w", pady=(5, 15))
+        
+        # Button frame
+        button_frame = tk.Frame(self.dialog, bg=self.colors['background'])
+        button_frame.grid(row=2, column=0, sticky="ew", padx=30, pady=(0, 20))
+        button_frame.grid_columnconfigure(0, weight=1)
+        
+        # OK button
+        ok_button = tk.Button(
+            button_frame,
+            text="OK",
+            font=('Segoe UI', 10, 'bold'),
+            bg=self.colors['primary'],
+            fg=self.colors['background'],
+            activebackground=self.colors['secondary'],
+            activeforeground=self.colors['background'],
+            relief=tk.FLAT,
+            cursor='hand2',
+            command=self._on_ok,
+            width=15
+        )
+        ok_button.pack(pady=5, ipadx=20, ipady=6)
+        
+        # Set focus to OK button
+        ok_button.focus_set()
+        self.dialog.bind('<Return>', lambda e: self._on_ok())
+        self.dialog.bind('<Escape>', lambda e: self._on_close())
+        
+        # Center and show
+        self.dialog.update_idletasks()
+        self.center_on_parent()
+        
+    def _on_ok(self):
+        """Handle OK button click."""
+        self.result = True
+        self.dialog.destroy()
+        
+    def show(self):
+        """Show the dialog and wait for response."""
+        self.parent.wait_window(self.dialog)
+        return self.result
+
+
+class ErrorDialog(CustomDialog):
+    """Custom error dialog."""
+    
+    def __init__(self, parent, colors, title, message, details=None):
+        super().__init__(parent, colors)
+        self.dialog.title(title)
+        
+        # Configure dialog grid
+        self.dialog.grid_columnconfigure(0, weight=1)
+        
+        # Header
+        header_frame = tk.Frame(self.dialog, bg=self.colors['error'], height=50)
+        header_frame.grid(row=0, column=0, sticky="ew", padx=0, pady=(0, 20))
+        header_frame.grid_propagate(False)
+        header_frame.grid_columnconfigure(0, weight=1)
+        
+        tk.Label(
+            header_frame,
+            text="❌  " + title,
+            font=('Segoe UI', 14, 'bold'),
+            bg=self.colors['error'],
+            fg='white',
+            anchor='center'
+        ).grid(row=0, column=0, sticky="ew", padx=20, pady=15)
+        
+        # Message content
+        content_frame = tk.Frame(self.dialog, bg=self.colors['background'])
+        content_frame.grid(row=1, column=0, sticky="ew", padx=30, pady=(0, 20))
+        content_frame.grid_columnconfigure(0, weight=1)
+        
+        # Main message
+        message_label = tk.Label(
+            content_frame,
+            text=message,
+            font=('Segoe UI', 11),
+            bg=self.colors['background'],
+            fg=self.colors['accent'],
+            wraplength=400,
+            justify=tk.LEFT
+        )
+        message_label.grid(row=0, column=0, sticky="w", pady=(0, 10))
+        
+        # Details if provided
+        if details:
+            details_label = tk.Label(
+                content_frame,
+                text=details,
+                font=('Segoe UI', 9),
+                bg=self.colors['background'],
+                fg=self.colors['text_secondary'],
+                wraplength=400,
+                justify=tk.LEFT
+            )
+            details_label.grid(row=1, column=0, sticky="w", pady=(5, 15))
+        
+        # Button frame
+        button_frame = tk.Frame(self.dialog, bg=self.colors['background'])
+        button_frame.grid(row=2, column=0, sticky="ew", padx=30, pady=(0, 20))
+        button_frame.grid_columnconfigure(0, weight=1)
+        
+        # OK button
+        ok_button = tk.Button(
+            button_frame,
+            text="OK",
+            font=('Segoe UI', 10, 'bold'),
+            bg=self.colors['primary'],
+            fg=self.colors['background'],
+            activebackground=self.colors['secondary'],
+            activeforeground=self.colors['background'],
+            relief=tk.FLAT,
+            cursor='hand2',
+            command=self._on_ok,
+            width=15
+        )
+        ok_button.pack(pady=5, ipadx=20, ipady=6)
+        
+        # Set focus to OK button
+        ok_button.focus_set()
+        self.dialog.bind('<Return>', lambda e: self._on_ok())
+        self.dialog.bind('<Escape>', lambda e: self._on_close())
+        
+        # Center and show
+        self.dialog.update_idletasks()
+        self.center_on_parent()
+        
+    def _on_ok(self):
+        """Handle OK button click."""
+        self.result = True
+        self.dialog.destroy()
+        
+    def show(self):
+        """Show the dialog and wait for response."""
+        self.parent.wait_window(self.dialog)
+        return self.result
+
+
+class ConfirmDialog(CustomDialog):
+    """Custom confirmation dialog with Yes/No options."""
+    
+    def __init__(self, parent, colors, title, message, details=None):
+        super().__init__(parent, colors)
+        self.dialog.title(title)
+        
+        # Configure dialog grid
+        self.dialog.grid_columnconfigure(0, weight=1)
+        
+        # Header
+        header_frame = tk.Frame(self.dialog, bg=self.colors['secondary'], height=50)
+        header_frame.grid(row=0, column=0, sticky="ew", padx=0, pady=(0, 20))
+        header_frame.grid_propagate(False)
+        header_frame.grid_columnconfigure(0, weight=1)
+        
+        tk.Label(
+            header_frame,
+            text="❓  " + title,
+            font=('Segoe UI', 14, 'bold'),
+            bg=self.colors['secondary'],
+            fg=self.colors['background'],
+            anchor='center'
+        ).grid(row=0, column=0, sticky="ew", padx=20, pady=15)
+        
+        # Message content
+        content_frame = tk.Frame(self.dialog, bg=self.colors['background'])
+        content_frame.grid(row=1, column=0, sticky="ew", padx=30, pady=(0, 20))
+        content_frame.grid_columnconfigure(0, weight=1)
+        
+        # Main message
+        message_label = tk.Label(
+            content_frame,
+            text=message,
+            font=('Segoe UI', 11),
+            bg=self.colors['background'],
+            fg=self.colors['accent'],
+            wraplength=400,
+            justify=tk.LEFT
+        )
+        message_label.grid(row=0, column=0, sticky="w", pady=(0, 10))
+        
+        # Details if provided
+        if details:
+            details_label = tk.Label(
+                content_frame,
+                text=details,
+                font=('Segoe UI', 9),
+                bg=self.colors['background'],
+                fg=self.colors['text_secondary'],
+                wraplength=400,
+                justify=tk.LEFT
+            )
+            details_label.grid(row=1, column=0, sticky="w", pady=(5, 15))
+        
+        # Button frame
+        button_frame = tk.Frame(self.dialog, bg=self.colors['background'])
+        button_frame.grid(row=2, column=0, sticky="ew", padx=30, pady=(0, 20))
+        button_frame.grid_columnconfigure(0, weight=1)
+        button_frame.grid_columnconfigure(1, weight=1)
+        
+        # Yes button
+        yes_button = tk.Button(
+            button_frame,
+            text="Yes",
+            font=('Segoe UI', 10, 'bold'),
+            bg=self.colors['primary'],
+            fg=self.colors['background'],
+            activebackground=self.colors['secondary'],
+            activeforeground=self.colors['background'],
+            relief=tk.FLAT,
+            cursor='hand2',
+            command=self._on_yes,
+            width=12
+        )
+        yes_button.grid(row=0, column=0, padx=(0, 10), pady=5, ipadx=15, ipady=6)
+        
+        # No button
+        no_button = tk.Button(
+            button_frame,
+            text="No",
+            font=('Segoe UI', 10, 'bold'),
+            bg=self.colors['divider'],
+            fg=self.colors['accent'],
+            activebackground=self.colors['surface'],
+            activeforeground=self.colors['accent'],
+            relief=tk.FLAT,
+            cursor='hand2',
+            command=self._on_no,
+            width=12
+        )
+        no_button.grid(row=0, column=1, padx=(10, 0), pady=5, ipadx=15, ipady=6)
+        
+        # Set focus to Yes button
+        yes_button.focus_set()
+        self.dialog.bind('<Return>', lambda e: self._on_yes())
+        self.dialog.bind('<Escape>', lambda e: self._on_no())
+        self.dialog.bind('<y>', lambda e: self._on_yes())
+        self.dialog.bind('<Y>', lambda e: self._on_yes())
+        self.dialog.bind('<n>', lambda e: self._on_no())
+        self.dialog.bind('<N>', lambda e: self._on_no())
+        
+        # Center and show
+        self.dialog.update_idletasks()
+        self.center_on_parent()
+        
+    def _on_yes(self):
+        """Handle Yes button click."""
+        self.result = True
+        self.dialog.destroy()
+        
+    def _on_no(self):
+        """Handle No button click."""
+        self.result = False
+        self.dialog.destroy()
+        
+    def show(self):
+        """Show the dialog and wait for response."""
+        self.parent.wait_window(self.dialog)
+        return self.result
+
+
 class CheckboxTreeview(ttk.Treeview):
     """Custom Treeview with checkboxes."""
     def __init__(self, master=None, **kw):
@@ -149,6 +602,7 @@ class CheckboxTreeview(ttk.Treeview):
             traverse(child)
 
         return checked_items
+
 
 class CodebaseCompilerApp:
     def __init__(self, root):
@@ -684,7 +1138,7 @@ class CodebaseCompilerApp:
     def load_tree_async(self):
         """Load files and folders into the treeview asynchronously."""
         if not self.current_folder or not self.current_folder.exists():
-            messagebox.showerror("Error", "Invalid folder path")
+            self.show_error_dialog("Error", "Invalid folder path")
             return
 
         # Clear existing tree
@@ -908,7 +1362,7 @@ class CodebaseCompilerApp:
                     self.is_loading = False
                     self.show_normal_state()
                     self.set_buttons_state('normal')
-                    messagebox.showerror("Error", f"Failed to load folder: {message}")
+                    self.root.after(0, lambda: self.show_error_dialog("Error", f"Failed to load folder: {message}"))
                     # Update the status text
                     self.status_var.set("Error loading folder")
                     
@@ -1011,7 +1465,7 @@ class CodebaseCompilerApp:
     def compile_selected(self):
         """Compile selected files into a single text file."""
         if self.is_loading:
-            messagebox.showwarning("Please Wait", "Cannot compile while loading files.")
+            self.show_warning_dialog("Please Wait", "Cannot compile while loading files.")
             return
             
         checked_items = self.tree.get_checked_items()
@@ -1020,8 +1474,8 @@ class CodebaseCompilerApp:
                          if not self.file_items[item_id]['is_dir']]
 
         if not selected_files:
-            messagebox.showwarning("No Files Selected", 
-                                 "Please select at least one file to compile.")
+            self.show_warning_dialog("No Files Selected", 
+                                   "Please select at least one file to compile.")
             return
 
         # Get output directory and file
@@ -1029,7 +1483,7 @@ class CodebaseCompilerApp:
         output_file = self.output_file_var.get().strip()
         
         if not output_dir or not os.path.isdir(output_dir):
-            messagebox.showerror("Error", "Please select a valid output directory")
+            self.show_error_dialog("Error", "Please select a valid output directory")
             return
         
         if not output_file:
@@ -1038,15 +1492,17 @@ class CodebaseCompilerApp:
         
         full_output_path = os.path.join(output_dir, output_file)
 
-        # Ask for confirmation
-        confirm = messagebox.askyesno(
+        # Ask for confirmation using custom dialog
+        confirm_dialog = ConfirmDialog(
+            self.root,
+            self.colors,
             "Confirm Compilation",
             f"📦 You are about to compile {len(selected_files)} files\n\n"
             f"📁 Output: {full_output_path}\n"
-            f"📄 Files selected: {len(selected_files)}",
-            icon='question'
+            f"📄 Files selected: {len(selected_files)}"
         )
-
+        
+        confirm = confirm_dialog.show()
         if not confirm:
             return
 
@@ -1137,9 +1593,9 @@ class CodebaseCompilerApp:
             # Final status update
             if errors:
                 self.queue.put(('error', f"Completed with {len(errors)} errors"))
-                self.root.after(0, lambda: messagebox.showwarning(
+                self.root.after(0, lambda: self.show_warning_dialog(
                     "Compilation Complete",
-                    f"Compilation finished with {len(errors)} errors.\n\n"
+                    f"Compilation finished with {len(errors)} errors.",
                     f"Output: {full_output_path}\n"
                     f"Files processed: {total_files}\n"
                     f"Errors: {len(errors)}\n\n"
@@ -1149,23 +1605,44 @@ class CodebaseCompilerApp:
                 self.queue.put(('success', f"Successfully compiled {total_files} files"))
                 file_size = os.path.getsize(full_output_path)
                 size_str = self._format_size(file_size)
-                self.root.after(0, lambda: messagebox.showinfo(
+                self.root.after(0, lambda: self.show_info_dialog(
                     "Success!",
                     f"Compilation completed successfully!\n\n"
                     f"Output file: {full_output_path}\n"
                     f"Files compiled: {total_files}\n"
-                    f"Output size: {size_str}\n\n"
-                    f"Your codebase is ready for review!"
+                    f"Output size: {size_str}",
+                    "Your codebase is ready for review!"
                 ))
 
         except Exception as e:
             self.queue.put(('error', f"Compilation failed: {str(e)}"))
-            self.root.after(0, lambda: messagebox.showerror(
+            self.root.after(0, lambda: self.show_error_dialog(
                 "Error",
                 f"Compilation failed:\n\n{str(e)}"
             ))
         finally:
             self.queue.put(('progress_complete', None))
+
+    # Custom dialog helper methods
+    def show_info_dialog(self, title, message, details=None):
+        """Show a custom information dialog."""
+        dialog = InfoDialog(self.root, self.colors, title, message, details)
+        dialog.show()
+        
+    def show_warning_dialog(self, title, message, details=None):
+        """Show a custom warning dialog."""
+        dialog = WarningDialog(self.root, self.colors, title, message, details)
+        dialog.show()
+        
+    def show_error_dialog(self, title, message, details=None):
+        """Show a custom error dialog."""
+        dialog = ErrorDialog(self.root, self.colors, title, message, details)
+        dialog.show()
+        
+    def show_confirm_dialog(self, title, message, details=None):
+        """Show a custom confirmation dialog."""
+        dialog = ConfirmDialog(self.root, self.colors, title, message, details)
+        return dialog.show()
 
     def on_closing(self):
         """Handle window closing."""
@@ -1173,6 +1650,7 @@ class CodebaseCompilerApp:
         self.cancel_loading()
         # Close the window
         self.root.destroy()
+
 
 def main():
     """Main application entry point."""
@@ -1182,6 +1660,7 @@ def main():
     app = CodebaseCompilerApp(root)
     
     root.mainloop()
+
 
 if __name__ == "__main__":
     main()
