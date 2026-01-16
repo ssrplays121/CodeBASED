@@ -190,9 +190,28 @@ class CodebaseCompilerApp:
         output_frame = ttk.Frame(main_frame)
         output_frame.pack(fill=tk.X, pady=(0, 10))
 
-        ttk.Label(output_frame, text="Output file:", style="Status.TLabel").pack(side=tk.LEFT)
+        # Output directory selection
+        output_dir_frame = ttk.Frame(output_frame)
+        output_dir_frame.pack(fill=tk.X, pady=(0, 5))
+        
+        ttk.Label(output_dir_frame, text="Output directory:", style="Status.TLabel").pack(side=tk.LEFT)
+        self.output_dir_var = tk.StringVar()
+        ttk.Entry(output_dir_frame, textvariable=self.output_dir_var, width=40).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5, 5))
+        ttk.Button(output_dir_frame, text="📁 Select Output Folder", command=self.select_output_dir).pack(side=tk.RIGHT)
+
+        # Output filename
+        output_file_frame = ttk.Frame(output_frame)
+        output_file_frame.pack(fill=tk.X)
+        
+        ttk.Label(output_file_frame, text="Output filename:", style="Status.TLabel").pack(side=tk.LEFT)
         self.output_file_var = tk.StringVar(value="codebase.txt")
-        ttk.Entry(output_frame, textvariable=self.output_file_var, width=40).pack(side=tk.LEFT, padx=(5, 10))
+        output_file_entry = ttk.Entry(output_file_frame, textvariable=self.output_file_var, width=40)
+        output_file_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5, 10))
+        output_file_entry.bind('<KeyRelease>', self.update_full_output_path)
+
+        # Full output path display
+        self.full_output_path_var = tk.StringVar()
+        ttk.Label(output_file_frame, textvariable=self.full_output_path_var, style="Status.TLabel").pack(side=tk.BOTTOM, pady=(5, 0))
 
         # Action buttons
         button_frame = ttk.Frame(main_frame)
@@ -214,6 +233,10 @@ class CodebaseCompilerApp:
 
         self.current_folder = None
         self.file_items = {}
+        self.output_dir = None
+
+        # Initialize default output directory
+        self.update_full_output_path()
 
     def select_folder(self):
         """Open folder selection dialog."""
@@ -221,7 +244,36 @@ class CodebaseCompilerApp:
         if folder_path:
             self.folder_path_var.set(folder_path)
             self.current_folder = Path(folder_path)
+            
+            # Set default output directory to the selected folder
+            self.output_dir_var.set(str(folder_path))
+            self.output_dir = Path(folder_path)
+            self.update_full_output_path()
+            
             self.load_tree()
+
+    def select_output_dir(self):
+        """Open output directory selection dialog."""
+        output_dir = filedialog.askdirectory(title="Select Output Directory")
+        if output_dir:
+            self.output_dir_var.set(output_dir)
+            self.output_dir = Path(output_dir)
+            self.update_full_output_path()
+
+    def update_full_output_path(self, event=None):
+        """Update the full output path display."""
+        output_dir = self.output_dir_var.get().strip()
+        output_file = self.output_file_var.get().strip()
+        
+        if not output_file:
+            output_file = "codebase.txt"
+            self.output_file_var.set(output_file)
+        
+        if output_dir and os.path.isdir(output_dir):
+            full_path = os.path.join(output_dir, output_file)
+            self.full_output_path_var.set(f"Full path: {full_path}")
+        else:
+            self.full_output_path_var.set("Please select a valid output directory")
 
     def load_tree(self):
         """Load files and folders into the treeview."""
@@ -332,14 +384,24 @@ class CodebaseCompilerApp:
             messagebox.showwarning("No Files Selected", "Please select at least one file to compile.")
             return
 
+        # Get output directory and file
+        output_dir = self.output_dir_var.get().strip()
         output_file = self.output_file_var.get().strip()
+        
+        if not output_dir or not os.path.isdir(output_dir):
+            messagebox.showerror("Error", "Please select a valid output directory")
+            return
+        
         if not output_file:
             output_file = "codebase.txt"
+            self.output_file_var.set(output_file)
+        
+        full_output_path = os.path.join(output_dir, output_file)
 
         # Ask for confirmation
         confirm = messagebox.askyesno(
             "Confirm Compilation",
-            f"You are about to compile {len(selected_files)} files into '{output_file}'.\n\n"
+            f"You are about to compile {len(selected_files)} files into:\n\n{full_output_path}\n\n"
             f"Selected files:\n" + "\n".join([f"• {f.name}" for f in selected_files[:5]]) +
             (f"\n... and {len(selected_files)-5} more" if len(selected_files) > 5 else ""),
             icon='question'
@@ -349,18 +411,19 @@ class CodebaseCompilerApp:
             return
 
         # Start compilation in a separate thread
-        threading.Thread(target=self._compile_files_thread, args=(selected_files, output_file), daemon=True).start()
+        threading.Thread(target=self._compile_files_thread, args=(selected_files, full_output_path), daemon=True).start()
 
-    def _compile_files_thread(self, files, output_file):
+    def _compile_files_thread(self, files, full_output_path):
         """Thread function for compiling files."""
         try:
             total_files = len(files)
             processed = 0
             errors = []
 
-            with open(output_file, 'w', encoding='utf-8') as outfile:
+            with open(full_output_path, 'w', encoding='utf-8') as outfile:
                 outfile.write(f"=== CODEBASE COMPILATION ===\n")
-                outfile.write(f"Folder: {self.current_folder}\n")
+                outfile.write(f"Source Folder: {self.current_folder}\n")
+                outfile.write(f"Output File: {full_output_path}\n")
                 outfile.write(f"Files compiled: {total_files}\n")
                 outfile.write(f"Date: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
                 outfile.write("=" * 50 + "\n\n")
@@ -378,6 +441,7 @@ class CodebaseCompilerApp:
 
                         outfile.write(f"// {'=' * 60}\n")
                         outfile.write(f"// File: {relative_path}\n")
+                        outfile.write(f"// Path: {file_path}\n")
                         outfile.write(f"// Size: {file_path.stat().st_size} bytes\n")
                         outfile.write(f"// Last Modified: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(file_path.stat().st_mtime))}\n")
                         outfile.write(f"// {'=' * 60}\n\n")
@@ -390,17 +454,19 @@ class CodebaseCompilerApp:
 
             # Final status update
             if errors:
-                self.queue.put(('error', f"Compilation completed with {len(errors)} errors. Output saved to {output_file}"))
+                self.queue.put(('error', f"Compilation completed with {len(errors)} errors. Output saved to {full_output_path}"))
                 self.root.after(0, lambda: messagebox.showwarning("Compilation Warnings",
                     f"Completed with {len(errors)} errors:\n" + "\n".join(errors[:3]) +
                     ("\n... and more" if len(errors) > 3 else "")))
             else:
-                self.queue.put(('success', f"Successfully compiled {total_files} files to {output_file}"))
+                self.queue.put(('success', f"Successfully compiled {total_files} files to {full_output_path}"))
+                file_size = os.path.getsize(full_output_path) / 1024
+                size_str = f"{file_size:.1f} KB" if file_size < 1024 else f"{file_size/1024:.1f} MB"
                 self.root.after(0, lambda: messagebox.showinfo("Success",
                     f"Compilation completed successfully!\n\n"
                     f"Files compiled: {total_files}\n"
-                    f"Output file: {output_file}\n"
-                    f"Total size: {os.path.getsize(output_file) / 1024:.1f} KB"))
+                    f"Output file: {full_output_path}\n"
+                    f"Output size: {size_str}"))
 
         except Exception as e:
             self.queue.put(('error', f"Compilation failed: {str(e)}"))
@@ -440,3 +506,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
