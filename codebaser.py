@@ -2,7 +2,7 @@
 import os
 import sys
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox, scrolledtext
+from tkinter import ttk, filedialog, messagebox
 from pathlib import Path
 import threading
 import queue
@@ -210,8 +210,11 @@ class CodebaseCompilerApp:
         output_file_entry.bind('<KeyRelease>', self.update_full_output_path)
 
         # Full output path display
+        path_display_frame = ttk.Frame(output_frame)
+        path_display_frame.pack(fill=tk.X, pady=(5, 0))
+        
         self.full_output_path_var = tk.StringVar()
-        ttk.Label(output_file_frame, textvariable=self.full_output_path_var, style="Status.TLabel").pack(side=tk.BOTTOM, pady=(5, 0))
+        ttk.Label(path_display_frame, textvariable=self.full_output_path_var, style="Status.TLabel").pack(side=tk.LEFT)
 
         # Action buttons
         button_frame = ttk.Frame(main_frame)
@@ -506,4 +509,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
