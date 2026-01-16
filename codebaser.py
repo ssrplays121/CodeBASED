@@ -668,6 +668,9 @@ class CodebaseCompilerApp:
         # Show loading indicator
         self.show_loading_indicator("Scanning directory...")
         
+        # Update the status label (next to file count) to show "Loading..."
+        self.status_var.set("Loading...")
+        
         # Set loading flag
         self.is_loading = True
         self.stop_loading_flag = False
@@ -860,12 +863,14 @@ class CodebaseCompilerApp:
                     self.hide_loading_indicator()
                     self.set_buttons_state('normal')
                     self.update_file_count()
+                    # Update the status label to show completion message
                     self.status_var.set(f"Loaded folder: {self.current_folder.name}")
                     
                 elif msg_type == 'loading_cancelled':
                     self.is_loading = False
                     self.hide_loading_indicator()
                     self.set_buttons_state('normal')
+                    # Update the status label to show cancelled message
                     self.status_var.set("Loading cancelled")
                     
                 elif msg_type == 'loading_error':
@@ -873,6 +878,7 @@ class CodebaseCompilerApp:
                     self.hide_loading_indicator()
                     self.set_buttons_state('normal')
                     messagebox.showerror("Error", f"Failed to load folder: {message}")
+                    # Update the status label to show error message
                     self.status_var.set("Error loading folder")
                     
                 elif msg_type == 'loading_warning':
