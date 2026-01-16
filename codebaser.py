@@ -17,9 +17,9 @@ class CheckboxTreeview(ttk.Treeview):
         self._create_checkbox_images()
 
         # Configure tags for checked/unchecked states
-        self.tag_configure("checked", image=self.checked_icon, foreground="#4CAF50")
-        self.tag_configure("unchecked", image=self.unchecked_icon, foreground="#757575")
-        self.tag_configure("mixed", image=self.mixed_icon, foreground="#FF9800")
+        self.tag_configure("checked", image=self.checked_icon)
+        self.tag_configure("unchecked", image=self.unchecked_icon)
+        self.tag_configure("mixed", image=self.mixed_icon)
 
         # Bind click events
         self.bind("<Button-1>", self._handle_click)
@@ -27,61 +27,53 @@ class CheckboxTreeview(ttk.Treeview):
 
     def _create_checkbox_images(self):
         """Create checkbox images using canvas."""
-        # Create checked icon (✓) - simplified version
-        self.checked_icon = tk.PhotoImage(width=16, height=16)
-        # Draw a simple check mark in a box
-        for i in range(16):
-            for j in range(16):
-                if 2 <= i <= 13 and 2 <= j <= 13:
-                    # White background
-                    self.checked_icon.put("#FFFFFF", (i, j))
-        # Green border
-        for i in range(2, 14):
-            self.checked_icon.put("#4CAF50", (i, 2))
-            self.checked_icon.put("#4CAF50", (i, 13))
-        for j in range(2, 14):
-            self.checked_icon.put("#4CAF50", (2, j))
-            self.checked_icon.put("#4CAF50", (13, j))
-        # Check mark
-        for i in range(5, 11):
-            self.checked_icon.put("#4CAF50", (i, 7))
-            self.checked_icon.put("#4CAF50", (i, 8))
-        self.checked_icon.put("#4CAF50", (6, 6))
-        self.checked_icon.put("#4CAF50", (7, 6))
-        self.checked_icon.put("#4CAF50", (9, 9))
-        self.checked_icon.put("#4CAF50", (10, 9))
+        # Create checked icon with custom color
+        self.checked_icon = tk.PhotoImage(width=18, height=18)
+        # Draw rounded rectangle background
+        for x in range(18):
+            for y in range(18):
+                if 2 <= x <= 15 and 2 <= y <= 15:
+                    # Create rounded effect
+                    if (x < 4 or x > 13) and (y < 4 or y > 13):
+                        self.checked_icon.put("#EBD5AB", (x, y))  # Match background
+                    else:
+                        self.checked_icon.put("#8BAE66", (x, y))
+        
+        # Draw check mark
+        check_points = [(4, 8), (7, 11), (12, 4), (13, 5), (7, 13), (3, 9)]
+        for i in range(len(check_points)-1):
+            x1, y1 = check_points[i]
+            x2, y2 = check_points[i+1]
+            for x in range(min(x1, x2), max(x1, x2)+1):
+                for y in range(min(y1, y2), max(y1, y2)+1):
+                    self.checked_icon.put("#1B211A", (x, y))
 
-        # Create unchecked icon (□)
-        self.unchecked_icon = tk.PhotoImage(width=16, height=16)
-        for i in range(16):
-            for j in range(16):
-                if 2 <= i <= 13 and 2 <= j <= 13:
-                    self.unchecked_icon.put("#FFFFFF", (i, j))
-        # Gray border
-        for i in range(2, 14):
-            self.unchecked_icon.put("#BDBDBD", (i, 2))
-            self.unchecked_icon.put("#BDBDBD", (i, 13))
-        for j in range(2, 14):
-            self.unchecked_icon.put("#BDBDBD", (2, j))
-            self.unchecked_icon.put("#BDBDBD", (13, j))
+        # Create unchecked icon
+        self.unchecked_icon = tk.PhotoImage(width=18, height=18)
+        # Draw border
+        for x in range(18):
+            for y in range(18):
+                if 2 <= x <= 15 and 2 <= y <= 15:
+                    if x == 2 or x == 15 or y == 2 or y == 15:
+                        self.unchecked_icon.put("#628141", (x, y))
+                    else:
+                        self.unchecked_icon.put("#EBD5AB", (x, y))
 
-        # Create mixed state icon (-)
-        self.mixed_icon = tk.PhotoImage(width=16, height=16)
-        for i in range(16):
-            for j in range(16):
-                if 2 <= i <= 13 and 2 <= j <= 13:
-                    self.mixed_icon.put("#FFFFFF", (i, j))
-        # Orange border
-        for i in range(2, 14):
-            self.mixed_icon.put("#FF9800", (i, 2))
-            self.mixed_icon.put("#FF9800", (i, 13))
-        for j in range(2, 14):
-            self.mixed_icon.put("#FF9800", (2, j))
-            self.mixed_icon.put("#FF9800", (13, j))
-        # Minus sign
-        for i in range(4, 12):
-            self.mixed_icon.put("#FF9800", (i, 7))
-            self.mixed_icon.put("#FF9800", (i, 8))
+        # Create mixed state icon
+        self.mixed_icon = tk.PhotoImage(width=18, height=18)
+        # Draw border
+        for x in range(18):
+            for y in range(18):
+                if 2 <= x <= 15 and 2 <= y <= 15:
+                    if x == 2 or x == 15 or y == 2 or y == 15:
+                        self.mixed_icon.put("#8BAE66", (x, y))
+                    else:
+                        self.mixed_icon.put("#EBD5AB", (x, y))
+        
+        # Draw horizontal line
+        for x in range(5, 13):
+            self.mixed_icon.put("#1B211A", (x, 8))
+            self.mixed_icon.put("#1B211A", (x, 9))
 
     def _handle_click(self, event):
         """Handle single click to toggle checkbox."""
@@ -159,127 +151,133 @@ class CheckboxTreeview(ttk.Treeview):
 class CodebaseCompilerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Codebase Compiler Pro")
-        self.root.geometry("1100x750")
-        self.root.minsize(900, 600)
+        self.root.title("codeBASED")
+        self.root.geometry("1200x800")
         
-        # Modern color scheme
+        # Use custom color palette
         self.colors = {
-            'primary': '#2196F3',
-            'primary_dark': '#1976D2',
-            'primary_light': '#BBDEFB',
-            'secondary': '#4CAF50',
-            'secondary_dark': '#388E3C',
-            'accent': '#FF9800',
-            'background': '#FAFAFA',
-            'surface': '#FFFFFF',
-            'text_primary': '#212121',
-            'text_secondary': '#757575',
-            'divider': '#E0E0E0',
-            'success': '#4CAF50',
-            'warning': '#FFC107',
-            'error': '#F44336'
+            'background': '#1B211A',
+            'primary': '#628141',
+            'secondary': '#8BAE66',
+            'accent': '#EBD5AB',
+            'surface': '#2A3129',
+            'text_primary': '#EBD5AB',
+            'text_secondary': '#8BAE66',
+            'divider': '#3A4239',
+            'success': '#8BAE66',
+            'warning': '#EBD5AB',
+            'error': '#C44536'
         }
         
-        # Set window background
+        # Configure root window
         self.root.configure(bg=self.colors['background'])
+        self.root.minsize(1000, 700)
         
-        # Configure styles
-        self._configure_styles()
+        # Configure grid for responsive layout
+        self.root.grid_columnconfigure(0, weight=1)
+        self.root.grid_rowconfigure(0, weight=1)
         
-        # Main container
+        # Main container with grid
         self.main_container = tk.Frame(root, bg=self.colors['background'])
-        self.main_container.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        self.main_container.grid(row=0, column=0, sticky="nsew", padx=20, pady=20)
+        self.main_container.grid_columnconfigure(0, weight=1)
         
-        # Header with gradient effect (simulated with solid color and border)
-        header_frame = tk.Frame(self.main_container, 
-                               bg=self.colors['primary'],
-                               height=100,
-                               relief=tk.FLAT)
-        header_frame.pack(fill=tk.X, pady=(0, 20))
-        header_frame.pack_propagate(False)
+        # Configure rows for proper scaling
+        for i in range(7):
+            self.main_container.grid_rowconfigure(i, weight=[0, 1, 0, 1, 0, 1, 0][i])
         
-        # Header content
-        header_content = tk.Frame(header_frame, bg=self.colors['primary'])
-        header_content.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        # Header
+        self.header_frame = tk.Frame(self.main_container, bg=self.colors['background'])
+        self.header_frame.grid(row=0, column=0, sticky="ew", pady=(0, 20))
         
-        # App title with icon
-        title_frame = tk.Frame(header_content, bg=self.colors['primary'])
-        title_frame.pack()
-        
-        # Icon label
-        icon_label = tk.Label(title_frame, text="⚡", 
-                            font=('Segoe UI', 32, 'bold'),
-                            bg=self.colors['primary'], 
-                            fg='white')
-        icon_label.pack(side=tk.LEFT, padx=(0, 10))
-        
-        # Title text
-        title_text = tk.Label(title_frame, 
-                            text="Codebase Compiler Pro", 
-                            font=('Segoe UI', 24, 'bold'),
-                            bg=self.colors['primary'], 
-                            fg='white')
-        title_text.pack(side=tk.LEFT)
+        # Main title
+        self.title_label = tk.Label(
+            self.header_frame,
+            text="codeBASED",
+            font=('Segoe UI', 36, 'bold'),
+            bg=self.colors['background'],
+            fg=self.colors['accent']
+        )
+        self.title_label.pack()
         
         # Subtitle
-        subtitle = tk.Label(header_content, 
-                          text="Compile your codebase into a single, organized file", 
-                          font=('Segoe UI', 11),
-                          bg=self.colors['primary'], 
-                          fg='#E3F2FD')
-        subtitle.pack(pady=(5, 0))
+        self.subtitle_label = tk.Label(
+            self.header_frame,
+            text="Compile your codebase into a single, organized file",
+            font=('Segoe UI', 14),
+            bg=self.colors['background'],
+            fg=self.colors['text_secondary']
+        )
+        self.subtitle_label.pack(pady=(5, 0))
         
-        # Folder selection card
-        folder_card = self._create_card(self.main_container, "📁 Source Folder")
-        folder_card.pack(fill=tk.X, pady=(0, 15))
+        # Source folder section
+        self.source_frame = tk.Frame(self.main_container, bg=self.colors['surface'])
+        self.source_frame.grid(row=1, column=0, sticky="ew", pady=(0, 10))
+        self.source_frame.grid_columnconfigure(1, weight=1)
         
-        # Folder selection frame inside card
-        folder_selection_frame = tk.Frame(folder_card, bg=self.colors['surface'])
-        folder_selection_frame.pack(fill=tk.X, padx=20, pady=15)
+        tk.Label(
+            self.source_frame,
+            text="Source Folder:",
+            font=('Segoe UI', 11, 'bold'),
+            bg=self.colors['surface'],
+            fg=self.colors['accent'],
+            anchor='w'
+        ).grid(row=0, column=0, sticky="w", padx=15, pady=15)
         
         self.folder_path_var = tk.StringVar()
-        folder_entry = tk.Entry(folder_selection_frame, 
-                              textvariable=self.folder_path_var, 
-                              font=('Segoe UI', 10),
-                              bd=2,
-                              relief=tk.FLAT,
-                              bg='white',
-                              fg=self.colors['text_primary'],
-                              insertbackground=self.colors['primary'])
-        folder_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10), ipady=8)
+        folder_entry = tk.Entry(
+            self.source_frame,
+            textvariable=self.folder_path_var,
+            font=('Segoe UI', 10),
+            bg=self.colors['divider'],
+            fg=self.colors['accent'],
+            insertbackground=self.colors['accent'],
+            relief=tk.FLAT,
+            highlightthickness=0
+        )
+        folder_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10), ipady=8)
         
-        # Select folder button
-        select_btn = tk.Button(folder_selection_frame, 
-                             text="Browse", 
-                             font=('Segoe UI', 10, 'bold'),
-                             bg=self.colors['primary'], 
-                             fg='white',
-                             activebackground=self.colors['primary_dark'],
-                             activeforeground='white',
-                             relief=tk.FLAT,
-                             cursor='hand2',
-                             command=self.select_folder)
-        select_btn.pack(side=tk.RIGHT, ipadx=20, ipady=8)
+        self.select_folder_btn = tk.Button(
+            self.source_frame,
+            text="Select Folder",
+            font=('Segoe UI', 10, 'bold'),
+            bg=self.colors['primary'],
+            fg=self.colors['background'],
+            activebackground=self.colors['secondary'],
+            activeforeground=self.colors['background'],
+            relief=tk.FLAT,
+            cursor='hand2',
+            command=self.select_folder
+        )
+        self.select_folder_btn.grid(row=0, column=2, padx=(0, 15), ipadx=15, ipady=6)
         
-        # File tree card
-        tree_card = self._create_card(self.main_container, "📂 File Selection")
-        tree_card.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        # File tree section
+        tree_container = tk.Frame(self.main_container, bg=self.colors['surface'])
+        tree_container.grid(row=2, column=0, sticky="nsew", pady=(0, 10))
+        tree_container.grid_rowconfigure(0, weight=1)
+        tree_container.grid_columnconfigure(0, weight=1)
         
-        # Treeview container
-        tree_container = tk.Frame(tree_card, bg=self.colors['surface'])
-        tree_container.pack(fill=tk.BOTH, expand=True, padx=20, pady=15)
+        # Treeview frame
+        tree_inner_frame = tk.Frame(tree_container, bg=self.colors['surface'])
+        tree_inner_frame.grid(row=0, column=0, sticky="nsew", padx=15, pady=15)
+        tree_inner_frame.grid_rowconfigure(0, weight=1)
+        tree_inner_frame.grid_columnconfigure(0, weight=1)
         
         # Create scrollbars
-        vsb = ttk.Scrollbar(tree_container, orient="vertical")
-        hsb = ttk.Scrollbar(tree_container, orient="horizontal")
+        vsb = ttk.Scrollbar(tree_inner_frame, orient="vertical")
+        hsb = ttk.Scrollbar(tree_inner_frame, orient="horizontal")
         
         # Create checkbox treeview
-        self.tree = CheckboxTreeview(tree_container, 
-                                    columns=("path", "size", "modified"),
-                                    show="tree headings",
-                                    yscrollcommand=vsb.set,
-                                    xscrollcommand=hsb.set)
+        self.tree = CheckboxTreeview(
+            tree_inner_frame,
+            columns=("path", "size", "modified"),
+            show="tree headings",
+            yscrollcommand=vsb.set,
+            xscrollcommand=hsb.set
+        )
+        
+        # Configure treeview style
+        self._configure_tree_style()
         
         # Configure treeview columns
         self.tree.heading("#0", text="File/Folder", anchor=tk.W)
@@ -293,176 +291,197 @@ class CodebaseCompilerApp:
         self.tree.column("modified", width=150, minwidth=120)
         
         # Pack treeview and scrollbars
-        vsb.pack(side=tk.RIGHT, fill=tk.Y)
-        hsb.pack(side=tk.BOTTOM, fill=tk.X)
-        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.tree.grid(row=0, column=0, sticky="nsew")
+        vsb.grid(row=0, column=1, sticky="ns")
+        hsb.grid(row=1, column=0, sticky="ew")
         
         vsb.config(command=self.tree.yview)
         hsb.config(command=self.tree.xview)
         
-        # Status bar
-        self.status_bar = tk.Frame(self.main_container, 
-                                  bg=self.colors['surface'], 
-                                  height=40,
-                                  relief=tk.FLAT,
-                                  borderwidth=1)
-        self.status_bar.pack(fill=tk.X, pady=(0, 15))
-        self.status_bar.pack_propagate(False)
+        # Tree controls
+        controls_frame = tk.Frame(tree_container, bg=self.colors['surface'])
+        controls_frame.grid(row=1, column=0, sticky="ew", padx=15, pady=(0, 15))
         
+        # Status and count labels
         self.status_var = tk.StringVar(value="Ready to select folder")
+        self.status_label = tk.Label(
+            controls_frame,
+            textvariable=self.status_var,
+            font=('Segoe UI', 9),
+            bg=self.colors['surface'],
+            fg=self.colors['text_secondary']
+        )
+        self.status_label.pack(side=tk.LEFT, fill=tk.Y)
+        
         self.file_count_var = tk.StringVar(value="Files: 0")
+        self.file_count_label = tk.Label(
+            controls_frame,
+            textvariable=self.file_count_var,
+            font=('Segoe UI', 9, 'bold'),
+            bg=self.colors['surface'],
+            fg=self.colors['accent']
+        )
+        self.file_count_label.pack(side=tk.RIGHT, fill=tk.Y)
         
-        status_label = tk.Label(self.status_bar, 
-                              textvariable=self.status_var,
-                              font=('Segoe UI', 9),
-                              bg=self.colors['surface'], 
-                              fg=self.colors['text_secondary'])
-        status_label.pack(side=tk.LEFT, padx=20, fill=tk.Y)
-        
-        file_count_label = tk.Label(self.status_bar, 
-                                  textvariable=self.file_count_var,
-                                  font=('Segoe UI', 9, 'bold'),
-                                  bg=self.colors['surface'], 
-                                  fg=self.colors['primary'])
-        file_count_label.pack(side=tk.RIGHT, padx=20, fill=tk.Y)
-        
-        # Output settings card
-        output_card = self._create_card(self.main_container, "💾 Output Settings")
-        output_card.pack(fill=tk.X, pady=(0, 15))
-        
-        output_content = tk.Frame(output_card, bg=self.colors['surface'])
-        output_content.pack(fill=tk.X, padx=20, pady=15)
+        # Output settings section
+        output_frame = tk.Frame(self.main_container, bg=self.colors['surface'])
+        output_frame.grid(row=3, column=0, sticky="ew", pady=(0, 10))
+        output_frame.grid_columnconfigure(1, weight=1)
         
         # Output directory
-        output_dir_frame = tk.Frame(output_content, bg=self.colors['surface'])
-        output_dir_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        tk.Label(output_dir_frame, 
-                text="Output Directory:", 
-                font=('Segoe UI', 10),
-                bg=self.colors['surface'], 
-                fg=self.colors['text_primary']).pack(side=tk.LEFT)
+        tk.Label(
+            output_frame,
+            text="Output Directory:",
+            font=('Segoe UI', 11, 'bold'),
+            bg=self.colors['surface'],
+            fg=self.colors['accent'],
+            anchor='w'
+        ).grid(row=0, column=0, sticky="w", padx=15, pady=(15, 5))
         
         self.output_dir_var = tk.StringVar()
-        output_dir_entry = tk.Entry(output_dir_frame, 
-                                  textvariable=self.output_dir_var,
-                                  font=('Segoe UI', 10),
-                                  bd=2,
-                                  relief=tk.FLAT,
-                                  bg='white',
-                                  fg=self.colors['text_primary'],
-                                  insertbackground=self.colors['primary'])
-        output_dir_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(10, 10), ipady=6)
+        output_dir_entry = tk.Entry(
+            output_frame,
+            textvariable=self.output_dir_var,
+            font=('Segoe UI', 10),
+            bg=self.colors['divider'],
+            fg=self.colors['accent'],
+            insertbackground=self.colors['accent'],
+            relief=tk.FLAT,
+            highlightthickness=0
+        )
+        output_dir_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10), pady=(15, 5), ipady=6)
         
-        output_dir_btn = tk.Button(output_dir_frame, 
-                                 text="Select",
-                                 font=('Segoe UI', 9),
-                                 bg=self.colors['primary_light'], 
-                                 fg=self.colors['primary'],
-                                 activebackground=self.colors['primary'],
-                                 activeforeground='white',
-                                 relief=tk.FLAT,
-                                 cursor='hand2',
-                                 command=self.select_output_dir)
-        output_dir_btn.pack(side=tk.RIGHT, ipadx=15, ipady=4)
+        self.select_output_btn = tk.Button(
+            output_frame,
+            text="Select",
+            font=('Segoe UI', 10, 'bold'),
+            bg=self.colors['primary'],
+            fg=self.colors['background'],
+            activebackground=self.colors['secondary'],
+            activeforeground=self.colors['background'],
+            relief=tk.FLAT,
+            cursor='hand2',
+            command=self.select_output_dir
+        )
+        self.select_output_btn.grid(row=0, column=2, padx=(0, 15), pady=(15, 5), ipadx=10, ipady=4)
         
         # Output filename
-        output_file_frame = tk.Frame(output_content, bg=self.colors['surface'])
-        output_file_frame.pack(fill=tk.X)
-        
-        tk.Label(output_file_frame, 
-                text="Output Filename:", 
-                font=('Segoe UI', 10),
-                bg=self.colors['surface'], 
-                fg=self.colors['text_primary']).pack(side=tk.LEFT)
+        tk.Label(
+            output_frame,
+            text="Output Filename:",
+            font=('Segoe UI', 11, 'bold'),
+            bg=self.colors['surface'],
+            fg=self.colors['accent'],
+            anchor='w'
+        ).grid(row=1, column=0, sticky="w", padx=15, pady=(0, 15))
         
         self.output_file_var = tk.StringVar(value="codebase.txt")
-        output_file_entry = tk.Entry(output_file_frame, 
-                                   textvariable=self.output_file_var,
-                                   font=('Segoe UI', 10),
-                                   bd=2,
-                                   relief=tk.FLAT,
-                                   bg='white',
-                                   fg=self.colors['text_primary'],
-                                   insertbackground=self.colors['primary'])
-        output_file_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(10, 10), ipady=6)
+        output_file_entry = tk.Entry(
+            output_frame,
+            textvariable=self.output_file_var,
+            font=('Segoe UI', 10),
+            bg=self.colors['divider'],
+            fg=self.colors['accent'],
+            insertbackground=self.colors['accent'],
+            relief=tk.FLAT,
+            highlightthickness=0
+        )
+        output_file_entry.grid(row=1, column=1, sticky="ew", padx=(0, 10), pady=(0, 15), ipady=6)
         output_file_entry.bind('<KeyRelease>', self.update_full_output_path)
         
         # Full path display
         self.full_output_path_var = tk.StringVar()
-        path_label = tk.Label(output_content, 
-                            textvariable=self.full_output_path_var,
-                            font=('Segoe UI', 9),
-                            bg=self.colors['surface'], 
-                            fg=self.colors['text_secondary'])
-        path_label.pack(anchor=tk.W, pady=(10, 0))
+        self.path_display = tk.Label(
+            output_frame,
+            textvariable=self.full_output_path_var,
+            font=('Segoe UI', 9),
+            bg=self.colors['surface'],
+            fg=self.colors['text_secondary']
+        )
+        self.path_display.grid(row=2, column=0, columnspan=3, sticky="w", padx=15, pady=(0, 15))
         
-        # Action buttons frame
-        button_frame = tk.Frame(self.main_container, bg=self.colors['background'])
-        button_frame.pack(fill=tk.X)
+        # Action buttons section
+        buttons_frame = tk.Frame(self.main_container, bg=self.colors['background'])
+        buttons_frame.grid(row=4, column=0, sticky="ew", pady=(0, 10))
         
-        # Left buttons (actions)
-        left_buttons = tk.Frame(button_frame, bg=self.colors['background'])
+        # Left action buttons
+        left_buttons = tk.Frame(buttons_frame, bg=self.colors['background'])
         left_buttons.pack(side=tk.LEFT)
         
         # Action buttons
-        refresh_btn = tk.Button(left_buttons, 
-                              text="🔄 Refresh", 
-                              font=('Segoe UI', 10),
-                              bg=self.colors['primary_light'], 
-                              fg=self.colors['primary'],
-                              activebackground=self.colors['primary'],
-                              activeforeground='white',
-                              relief=tk.FLAT,
-                              cursor='hand2',
-                              command=self.refresh_tree)
-        refresh_btn.pack(side=tk.LEFT, padx=(0, 10), ipadx=15, ipady=8)
+        self.refresh_btn = tk.Button(
+            left_buttons,
+            text="Refresh",
+            font=('Segoe UI', 10, 'bold'),
+            bg=self.colors['divider'],
+            fg=self.colors['accent'],
+            activebackground=self.colors['secondary'],
+            activeforeground=self.colors['background'],
+            relief=tk.FLAT,
+            cursor='hand2',
+            command=self.refresh_tree
+        )
+        self.refresh_btn.pack(side=tk.LEFT, padx=(0, 10), ipadx=15, ipady=6)
         
-        check_btn = tk.Button(left_buttons, 
-                            text="✓ Check All", 
-                            font=('Segoe UI', 10),
-                            bg='#E8F5E9', 
-                            fg=self.colors['success'],
-                            activebackground=self.colors['success'],
-                            activeforeground='white',
-                            relief=tk.FLAT,
-                            cursor='hand2',
-                            command=self.check_all)
-        check_btn.pack(side=tk.LEFT, padx=(0, 10), ipadx=15, ipady=8)
+        self.check_all_btn = tk.Button(
+            left_buttons,
+            text="Check All",
+            font=('Segoe UI', 10, 'bold'),
+            bg=self.colors['divider'],
+            fg=self.colors['accent'],
+            activebackground=self.colors['secondary'],
+            activeforeground=self.colors['background'],
+            relief=tk.FLAT,
+            cursor='hand2',
+            command=self.check_all
+        )
+        self.check_all_btn.pack(side=tk.LEFT, padx=(0, 10), ipadx=15, ipady=6)
         
-        uncheck_btn = tk.Button(left_buttons, 
-                              text="✗ Uncheck All", 
-                              font=('Segoe UI', 10),
-                              bg='#FFEBEE', 
-                              fg=self.colors['error'],
-                              activebackground=self.colors['error'],
-                              activeforeground='white',
-                              relief=tk.FLAT,
-                              cursor='hand2',
-                              command=self.uncheck_all)
-        uncheck_btn.pack(side=tk.LEFT, ipadx=15, ipady=8)
+        self.uncheck_all_btn = tk.Button(
+            left_buttons,
+            text="Uncheck All",
+            font=('Segoe UI', 10, 'bold'),
+            bg=self.colors['divider'],
+            fg=self.colors['accent'],
+            activebackground=self.colors['secondary'],
+            activeforeground=self.colors['background'],
+            relief=tk.FLAT,
+            cursor='hand2',
+            command=self.uncheck_all
+        )
+        self.uncheck_all_btn.pack(side=tk.LEFT, ipadx=15, ipady=6)
         
-        # Right button (main action)
-        compile_btn = tk.Button(button_frame, 
-                              text="⚡ Compile Selected Files", 
-                              font=('Segoe UI', 11, 'bold'),
-                              bg=self.colors['secondary'], 
-                              fg='white',
-                              activebackground=self.colors['secondary_dark'],
-                              activeforeground='white',
-                              relief=tk.FLAT,
-                              cursor='hand2',
-                              command=self.compile_selected)
-        compile_btn.pack(side=tk.RIGHT, ipadx=30, ipady=10)
+        # Main compile button
+        self.compile_btn = tk.Button(
+            buttons_frame,
+            text="Compile Selected Files",
+            font=('Segoe UI', 12, 'bold'),
+            bg=self.colors['primary'],
+            fg=self.colors['background'],
+            activebackground=self.colors['secondary'],
+            activeforeground=self.colors['background'],
+            relief=tk.FLAT,
+            cursor='hand2',
+            command=self.compile_selected
+        )
+        self.compile_btn.pack(side=tk.RIGHT, ipadx=30, ipady=8)
         
-        # Progress bar (hidden initially)
+        # Progress bar section
         self.progress_frame = tk.Frame(self.main_container, bg=self.colors['background'])
+        self.progress_frame.grid(row=5, column=0, sticky="ew")
+        
         self.progress_var = tk.DoubleVar()
-        self.progress_bar = ttk.Progressbar(self.progress_frame, 
-                                          variable=self.progress_var,
-                                          mode='determinate',
-                                          length=100)
-        self.progress_bar.pack(fill=tk.X)
+        self.progress_bar = ttk.Progressbar(
+            self.progress_frame,
+            variable=self.progress_var,
+            mode='determinate',
+            length=100
+        )
+        self.progress_bar.pack(fill=tk.X, expand=True)
+        self.progress_frame.grid_remove()  # Hide initially
+        
+        # Configure styles
+        self._configure_styles()
         
         # Queue for thread communication
         self.queue = queue.Queue()
@@ -475,67 +494,61 @@ class CodebaseCompilerApp:
         # Initialize default output directory
         self.update_full_output_path()
         
+        # Bind window resize
+        self.root.bind('<Configure>', self._on_window_resize)
+        
         # Center window
         self.center_window()
 
     def _configure_styles(self):
-        """Configure ttk styles for a modern look."""
+        """Configure ttk styles with custom colors."""
         style = ttk.Style()
         style.theme_use('clam')
         
         # Configure treeview
         style.configure("Treeview",
-                       background=self.colors['surface'],
-                       foreground=self.colors['text_primary'],
-                       fieldbackground=self.colors['surface'],
+                       background=self.colors['divider'],
+                       foreground=self.colors['accent'],
+                       fieldbackground=self.colors['divider'],
                        borderwidth=0,
-                       font=('Segoe UI', 9))
+                       font=('Segoe UI', 10))
         
         style.configure("Treeview.Heading",
-                       background=self.colors['primary_light'],
-                       foreground=self.colors['text_primary'],
+                       background=self.colors['surface'],
+                       foreground=self.colors['accent'],
                        relief=tk.FLAT,
-                       font=('Segoe UI', 9, 'bold'))
+                       font=('Segoe UI', 10, 'bold'))
+        
+        style.map("Treeview.Heading",
+                 background=[('active', self.colors['primary'])])
         
         # Configure scrollbars
         style.configure("Vertical.TScrollbar",
-                       background=self.colors['divider'],
-                       troughcolor=self.colors['surface'],
-                       bordercolor=self.colors['divider'],
-                       arrowcolor=self.colors['text_secondary'],
-                       gripcount=0)
+                       background=self.colors['surface'],
+                       troughcolor=self.colors['divider'],
+                       bordercolor=self.colors['surface'],
+                       arrowcolor=self.colors['accent'])
         
         style.configure("Horizontal.TScrollbar",
-                       background=self.colors['divider'],
-                       troughcolor=self.colors['surface'],
-                       bordercolor=self.colors['divider'],
-                       arrowcolor=self.colors['text_secondary'],
-                       gripcount=0)
+                       background=self.colors['surface'],
+                       troughcolor=self.colors['divider'],
+                       bordercolor=self.colors['surface'],
+                       arrowcolor=self.colors['accent'])
         
         # Configure progress bar
         style.configure("TProgressbar",
-                       background=self.colors['primary'],
-                       troughcolor=self.colors['background'],
-                       bordercolor=self.colors['divider'])
+                       background=self.colors['secondary'],
+                       troughcolor=self.colors['divider'],
+                       bordercolor=self.colors['surface'])
 
-    def _create_card(self, parent, title):
-        """Create a modern card container."""
-        card = tk.Frame(parent, 
-                       bg=self.colors['surface'],
-                       relief=tk.FLAT,
-                       borderwidth=1)
+    def _configure_tree_style(self):
+        """Configure treeview item colors."""
+        self.tree.tag_configure('folder', foreground=self.colors['secondary'])
+        self.tree.tag_configure('file', foreground=self.colors['accent'])
         
-        # Card header
-        header = tk.Frame(card, bg=self.colors['primary_light'])
-        header.pack(fill=tk.X, pady=(1, 0))
-        
-        tk.Label(header, 
-                text=title, 
-                font=('Segoe UI', 10, 'bold'),
-                bg=self.colors['primary_light'], 
-                fg=self.colors['text_primary']).pack(side=tk.LEFT, padx=10, pady=5)
-        
-        return card
+        # Configure alternating row colors
+        self.tree.tag_configure('evenrow', background=self.colors['divider'])
+        self.tree.tag_configure('oddrow', background=self.colors['surface'])
 
     def center_window(self):
         """Center the window on the screen."""
@@ -545,6 +558,17 @@ class CodebaseCompilerApp:
         x = (self.root.winfo_screenwidth() // 2) - (width // 2)
         y = (self.root.winfo_screenheight() // 2) - (height // 2)
         self.root.geometry(f'{width}x{height}+{x}+{y}')
+
+    def _on_window_resize(self, event):
+        """Handle window resize events."""
+        # Update column widths on resize
+        if hasattr(self, 'tree'):
+            tree_width = self.tree.winfo_width()
+            if tree_width > 100:
+                # Adjust column proportions
+                self.tree.column("#0", width=int(tree_width * 0.4))
+                self.tree.column("path", width=int(tree_width * 0.35))
+                # Keep size and modified columns fixed
 
     def select_folder(self):
         """Open folder selection dialog."""
@@ -597,8 +621,10 @@ class CodebaseCompilerApp:
             self.tree.delete(item)
 
         self.file_items = {}
+        row_index = 0
 
         def add_items(parent_path, parent_id=""):
+            nonlocal row_index
             try:
                 items = sorted(parent_path.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower()))
 
@@ -622,12 +648,13 @@ class CodebaseCompilerApp:
                             size = "N/A"
                             modified = "N/A"
 
-                    # Insert item
+                    # Insert item with alternating row colors
+                    row_tag = 'evenrow' if row_index % 2 == 0 else 'oddrow'
                     item_id = self.tree.insert(
                         parent_id, "end",
                         text=f"{icon} {display_name}",
                         values=(str(relative_path), size, modified),
-                        tags=("unchecked",)
+                        tags=("unchecked", row_tag, 'folder' if item.is_dir() else 'file')
                     )
 
                     self.file_items[item_id] = {
@@ -635,6 +662,7 @@ class CodebaseCompilerApp:
                         'is_dir': item.is_dir(),
                         'relative_path': relative_path
                     }
+                    row_index += 1
 
                     # Recursively add subdirectories
                     if item.is_dir():
@@ -753,7 +781,7 @@ class CodebaseCompilerApp:
             return
 
         # Show progress bar
-        self.progress_frame.pack(fill=tk.X, pady=(15, 0))
+        self.progress_frame.grid()
         self.progress_var.set(0)
         
         # Start compilation in a separate thread
@@ -769,14 +797,14 @@ class CodebaseCompilerApp:
             errors = []
 
             with open(full_output_path, 'w', encoding='utf-8') as outfile:
-                # Write header
+                # Write header with custom colors in comments
                 outfile.write("=" * 70 + "\n")
-                outfile.write(" " * 10 + "📚 CODEBASE COMPILATION ARCHIVE 📚\n")
+                outfile.write(" " * 10 + "codeBASED COMPILATION ARCHIVE\n")
                 outfile.write("=" * 70 + "\n\n")
-                outfile.write(f"📁 Source Directory: {self.current_folder}\n")
-                outfile.write(f"💾 Output File: {full_output_path}\n")
-                outfile.write(f"📊 Total Files: {total_files}\n")
-                outfile.write(f"📅 Compiled on: {time.strftime('%Y-%m-%d at %H:%M:%S')}\n")
+                outfile.write(f"// Source Directory: {self.current_folder}\n")
+                outfile.write(f"// Output File: {full_output_path}\n")
+                outfile.write(f"// Total Files: {total_files}\n")
+                outfile.write(f"// Compiled on: {time.strftime('%Y-%m-%d at %H:%M:%S')}\n")
                 outfile.write("=" * 70 + "\n\n")
 
                 for file_path in files:
@@ -799,53 +827,52 @@ class CodebaseCompilerApp:
                         mod_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(stats.st_mtime))
                         
                         # Write file header
-                        outfile.write("▄" * 70 + "\n")
-                        outfile.write(f"📄 FILE: {relative_path}\n")
-                        outfile.write("─" * 70 + "\n")
-                        outfile.write(f"📍 Full Path: {file_path}\n")
-                        outfile.write(f"📏 Size: {file_size}\n")
-                        outfile.write(f"🕒 Last Modified: {mod_time}\n")
-                        outfile.write(f"🔢 Lines: {len(content.splitlines())}\n")
-                        outfile.write("─" * 70 + "\n\n")
+                        outfile.write("// " + "=" * 67 + "\n")
+                        outfile.write(f"// FILE: {relative_path}\n")
+                        outfile.write(f"// Path: {file_path}\n")
+                        outfile.write(f"// Size: {file_size}\n")
+                        outfile.write(f"// Last Modified: {mod_time}\n")
+                        outfile.write(f"// Lines: {len(content.splitlines())}\n")
+                        outfile.write("// " + "=" * 67 + "\n\n")
                         
                         # Write content
                         outfile.write(content)
                         
                         # Add spacing between files
-                        outfile.write("\n" + "─" * 70 + "\n\n")
+                        outfile.write("\n\n")
 
                     except Exception as e:
                         error_msg = f"Error reading {relative_path}: {str(e)}"
                         errors.append(error_msg)
-                        outfile.write(f"❌ ERROR: {error_msg}\n\n")
+                        outfile.write(f"// ERROR: {error_msg}\n\n")
 
                 # Write footer
                 outfile.write("=" * 70 + "\n")
-                outfile.write(" " * 10 + "✅ COMPILATION COMPLETE ✅\n")
+                outfile.write(" " * 10 + "COMPILATION COMPLETE\n")
                 outfile.write("=" * 70 + "\n\n")
-                outfile.write(f"📊 Summary:\n")
-                outfile.write(f"   ✅ Successfully processed: {total_files - len(errors)} files\n")
-                outfile.write(f"   ❌ Errors encountered: {len(errors)} files\n")
-                outfile.write(f"   📁 Total size: {self._format_size(os.path.getsize(full_output_path))}\n")
-                outfile.write(f"   ⏱️  Completed at: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                outfile.write(f"// Summary:\n")
+                outfile.write(f"//   Successfully processed: {total_files - len(errors)} files\n")
+                outfile.write(f"//   Errors encountered: {len(errors)} files\n")
+                outfile.write(f"//   Total size: {self._format_size(os.path.getsize(full_output_path))}\n")
+                outfile.write(f"//   Completed at: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
                 
                 if errors:
-                    outfile.write("\n" + "!" * 70 + "\n")
-                    outfile.write("⚠️  ERRORS ENCOUNTERED:\n")
+                    outfile.write("\n// " + "!" * 67 + "\n")
+                    outfile.write("// ERRORS ENCOUNTERED:\n")
                     for error in errors[:10]:
-                        outfile.write(f"   • {error}\n")
+                        outfile.write(f"//   • {error}\n")
                     if len(errors) > 10:
-                        outfile.write(f"   ... and {len(errors) - 10} more errors\n")
+                        outfile.write(f"//   ... and {len(errors) - 10} more errors\n")
 
             # Final status update
             if errors:
                 self.queue.put(('error', f"Completed with {len(errors)} errors"))
                 self.root.after(0, lambda: messagebox.showwarning(
                     "Compilation Complete",
-                    f"✅ Compilation finished with {len(errors)} errors.\n\n"
-                    f"📁 Output: {full_output_path}\n"
-                    f"📄 Files processed: {total_files}\n"
-                    f"⚠️  Errors: {len(errors)}\n\n"
+                    f"Compilation finished with {len(errors)} errors.\n\n"
+                    f"Output: {full_output_path}\n"
+                    f"Files processed: {total_files}\n"
+                    f"Errors: {len(errors)}\n\n"
                     f"Check the output file for details."
                 ))
             else:
@@ -853,18 +880,18 @@ class CodebaseCompilerApp:
                 file_size = os.path.getsize(full_output_path)
                 size_str = self._format_size(file_size)
                 self.root.after(0, lambda: messagebox.showinfo(
-                    "Success! 🎉",
-                    f"✅ Compilation completed successfully!\n\n"
-                    f"📁 Output file: {full_output_path}\n"
-                    f"📊 Files compiled: {total_files}\n"
-                    f"📦 Output size: {size_str}\n\n"
-                    f"✨ Your codebase is ready for review!"
+                    "Success!",
+                    f"Compilation completed successfully!\n\n"
+                    f"Output file: {full_output_path}\n"
+                    f"Files compiled: {total_files}\n"
+                    f"Output size: {size_str}\n\n"
+                    f"Your codebase is ready for review!"
                 ))
 
         except Exception as e:
             self.queue.put(('error', f"Compilation failed: {str(e)}"))
             self.root.after(0, lambda: messagebox.showerror(
-                "Error ❌",
+                "Error",
                 f"Compilation failed:\n\n{str(e)}"
             ))
         finally:
@@ -880,19 +907,13 @@ class CodebaseCompilerApp:
                 elif msg_type == 'progress':
                     self.progress_var.set(message)
                 elif msg_type == 'progress_complete':
-                    self.progress_frame.pack_forget()
+                    self.progress_frame.grid_remove()
                 elif msg_type == 'success':
                     self.status_var.set(message)
-                    self.status_bar.configure(bg=self.colors['success'])
-                    for widget in self.status_bar.winfo_children():
-                        if isinstance(widget, tk.Label):
-                            widget.configure(bg=self.colors['success'], fg='white')
+                    self.status_label.config(fg=self.colors['success'])
                 elif msg_type == 'error':
                     self.status_var.set(message)
-                    self.status_bar.configure(bg=self.colors['error'])
-                    for widget in self.status_bar.winfo_children():
-                        if isinstance(widget, tk.Label):
-                            widget.configure(bg=self.colors['error'], fg='white')
+                    self.status_label.config(fg=self.colors['error'])
         except queue.Empty:
             pass
         finally:
