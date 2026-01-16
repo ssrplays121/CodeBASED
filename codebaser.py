@@ -195,7 +195,7 @@ class CodebaseCompilerApp:
         
         # Configure rows for proper scaling
         for i in range(8):  # Added one more row for cancel button
-            self.main_container.grid_rowconfigure(i, weight=[0, 1, 0, 1, 0, 1, 0, 0][i])
+            self.main_container.grid_rowconfigure(i, weight=[0, 0, 1, 0, 0, 0, 0, 0][i])  # Fixed: row 1 (source) weight 0
         
         # Header
         self.header_frame = tk.Frame(self.main_container, bg=self.colors['background'])
@@ -221,9 +221,10 @@ class CodebaseCompilerApp:
         )
         self.subtitle_label.pack(pady=(5, 0))
         
-        # Source folder section
-        self.source_frame = tk.Frame(self.main_container, bg=self.colors['surface'])
+        # Source folder section - FIXED HEIGHT
+        self.source_frame = tk.Frame(self.main_container, bg=self.colors['surface'], height=60)
         self.source_frame.grid(row=1, column=0, sticky="ew", pady=(0, 10))
+        self.source_frame.grid_propagate(False)  # Prevents shrinking
         self.source_frame.grid_columnconfigure(1, weight=1)
         
         tk.Label(
@@ -233,7 +234,7 @@ class CodebaseCompilerApp:
             bg=self.colors['surface'],
             fg=self.colors['accent'],
             anchor='w'
-        ).grid(row=0, column=0, sticky="w", padx=15, pady=15)
+        ).grid(row=0, column=0, sticky="w", padx=15, pady=20)
         
         self.folder_path_var = tk.StringVar()
         self.folder_entry = tk.Entry(
@@ -246,7 +247,7 @@ class CodebaseCompilerApp:
             relief=tk.FLAT,
             highlightthickness=0
         )
-        self.folder_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10), ipady=8)
+        self.folder_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10), pady=20, ipady=8)
         
         self.select_folder_btn = tk.Button(
             self.source_frame,
@@ -260,7 +261,7 @@ class CodebaseCompilerApp:
             cursor='hand2',
             command=self.select_folder
         )
-        self.select_folder_btn.grid(row=0, column=2, padx=(0, 15), ipadx=15, ipady=6)
+        self.select_folder_btn.grid(row=0, column=2, padx=(0, 15), pady=20, ipadx=15, ipady=6)
         
         # File tree section
         self.tree_container = tk.Frame(self.main_container, bg=self.colors['surface'])
@@ -355,24 +356,25 @@ class CodebaseCompilerApp:
             command=self.cancel_loading
         )
         
-        # Output settings section
-        output_frame = tk.Frame(self.main_container, bg=self.colors['surface'])
-        output_frame.grid(row=3, column=0, sticky="ew", pady=(0, 10))
-        output_frame.grid_columnconfigure(1, weight=1)
+        # Output settings section - FIXED HEIGHT
+        self.output_frame = tk.Frame(self.main_container, bg=self.colors['surface'], height=120)
+        self.output_frame.grid(row=3, column=0, sticky="ew", pady=(0, 10))
+        self.output_frame.grid_propagate(False)  # Prevents shrinking
+        self.output_frame.grid_columnconfigure(1, weight=1)
         
         # Output directory
         tk.Label(
-            output_frame,
+            self.output_frame,
             text="Output Directory:",
             font=('Segoe UI', 11, 'bold'),
             bg=self.colors['surface'],
             fg=self.colors['accent'],
             anchor='w'
-        ).grid(row=0, column=0, sticky="w", padx=15, pady=(15, 5))
+        ).grid(row=0, column=0, sticky="w", padx=15, pady=(20, 5))
         
         self.output_dir_var = tk.StringVar()
         output_dir_entry = tk.Entry(
-            output_frame,
+            self.output_frame,
             textvariable=self.output_dir_var,
             font=('Segoe UI', 10),
             bg=self.colors['divider'],
@@ -381,10 +383,10 @@ class CodebaseCompilerApp:
             relief=tk.FLAT,
             highlightthickness=0
         )
-        output_dir_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10), pady=(15, 5), ipady=6)
+        output_dir_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10), pady=(20, 5), ipady=6)
         
         self.select_output_btn = tk.Button(
-            output_frame,
+            self.output_frame,
             text="Select",
             font=('Segoe UI', 10, 'bold'),
             bg=self.colors['primary'],
@@ -395,21 +397,21 @@ class CodebaseCompilerApp:
             cursor='hand2',
             command=self.select_output_dir
         )
-        self.select_output_btn.grid(row=0, column=2, padx=(0, 15), pady=(15, 5), ipadx=10, ipady=4)
+        self.select_output_btn.grid(row=0, column=2, padx=(0, 15), pady=(20, 5), ipadx=10, ipady=4)
         
         # Output filename
         tk.Label(
-            output_frame,
+            self.output_frame,
             text="Output Filename:",
             font=('Segoe UI', 11, 'bold'),
             bg=self.colors['surface'],
             fg=self.colors['accent'],
             anchor='w'
-        ).grid(row=1, column=0, sticky="w", padx=15, pady=(0, 15))
+        ).grid(row=1, column=0, sticky="w", padx=15, pady=(0, 20))
         
         self.output_file_var = tk.StringVar(value="codebase.txt")
         output_file_entry = tk.Entry(
-            output_frame,
+            self.output_frame,
             textvariable=self.output_file_var,
             font=('Segoe UI', 10),
             bg=self.colors['divider'],
@@ -418,27 +420,28 @@ class CodebaseCompilerApp:
             relief=tk.FLAT,
             highlightthickness=0
         )
-        output_file_entry.grid(row=1, column=1, sticky="ew", padx=(0, 10), pady=(0, 15), ipady=6)
+        output_file_entry.grid(row=1, column=1, sticky="ew", padx=(0, 10), pady=(0, 20), ipady=6)
         output_file_entry.bind('<KeyRelease>', self.update_full_output_path)
         
         # Full path display
         self.full_output_path_var = tk.StringVar()
         self.path_display = tk.Label(
-            output_frame,
+            self.output_frame,
             textvariable=self.full_output_path_var,
             font=('Segoe UI', 9),
             bg=self.colors['surface'],
             fg=self.colors['text_secondary']
         )
-        self.path_display.grid(row=2, column=0, columnspan=3, sticky="w", padx=15, pady=(0, 15))
+        self.path_display.grid(row=2, column=0, columnspan=3, sticky="w", padx=15, pady=(0, 20))
         
-        # Action buttons section
-        buttons_frame = tk.Frame(self.main_container, bg=self.colors['background'])
-        buttons_frame.grid(row=4, column=0, sticky="ew", pady=(0, 10))
+        # Action buttons section - FIXED HEIGHT
+        self.buttons_frame = tk.Frame(self.main_container, bg=self.colors['background'], height=70)
+        self.buttons_frame.grid(row=4, column=0, sticky="ew", pady=(0, 10))
+        self.buttons_frame.grid_propagate(False)  # Prevents shrinking
         
         # Left action buttons
-        left_buttons = tk.Frame(buttons_frame, bg=self.colors['background'])
-        left_buttons.pack(side=tk.LEFT)
+        left_buttons = tk.Frame(self.buttons_frame, bg=self.colors['background'])
+        left_buttons.place(relx=0, rely=0.5, anchor='w', y=0)
         
         # Action buttons
         self.refresh_btn = tk.Button(
@@ -488,7 +491,7 @@ class CodebaseCompilerApp:
         
         # Main compile button
         self.compile_btn = tk.Button(
-            buttons_frame,
+            self.buttons_frame,
             text="Compile Selected Files",
             font=('Segoe UI', 12, 'bold'),
             bg=self.colors['primary'],
@@ -500,11 +503,12 @@ class CodebaseCompilerApp:
             command=self.compile_selected,
             state='normal'
         )
-        self.compile_btn.pack(side=tk.RIGHT, ipadx=30, ipady=8)
+        self.compile_btn.place(relx=1.0, rely=0.5, anchor='e', x=0, y=0)
         
-        # Progress bar section
-        self.progress_frame = tk.Frame(self.main_container, bg=self.colors['background'])
+        # Progress bar section - FIXED HEIGHT
+        self.progress_frame = tk.Frame(self.main_container, bg=self.colors['background'], height=30)
         self.progress_frame.grid(row=5, column=0, sticky="ew")
+        self.progress_frame.grid_propagate(False)  # Prevents shrinking
         
         self.progress_var = tk.DoubleVar()
         self.progress_bar = ttk.Progressbar(
@@ -513,7 +517,7 @@ class CodebaseCompilerApp:
             mode='determinate',
             length=100
         )
-        self.progress_bar.pack(fill=tk.X, expand=True)
+        self.progress_bar.pack(fill=tk.X, expand=True, padx=0, pady=10)
         self.progress_frame.grid_remove()  # Hide initially
         
         # Configure styles
