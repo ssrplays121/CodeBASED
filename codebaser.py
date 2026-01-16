@@ -194,8 +194,8 @@ class CodebaseCompilerApp:
         self.main_container.grid_columnconfigure(0, weight=1)
         
         # Configure rows for proper scaling
-        for i in range(8):  # Added one more row for cancel button
-            self.main_container.grid_rowconfigure(i, weight=[0, 0, 1, 0, 0, 0, 0, 0][i])  # Fixed: row 1 (source) weight 0
+        for i in range(8):
+            self.main_container.grid_rowconfigure(i, weight=[0, 0, 1, 0, 0, 0, 0, 0][i])
         
         # Header
         self.header_frame = tk.Frame(self.main_container, bg=self.colors['background'])
@@ -221,12 +221,14 @@ class CodebaseCompilerApp:
         )
         self.subtitle_label.pack(pady=(5, 0))
         
-        # Source folder section - FIXED HEIGHT
+        # Source folder section - FIXED HEIGHT WITH VERTICALLY CENTERED CONTENT
         self.source_frame = tk.Frame(self.main_container, bg=self.colors['surface'], height=60)
         self.source_frame.grid(row=1, column=0, sticky="ew", pady=(0, 10))
         self.source_frame.grid_propagate(False)  # Prevents shrinking
+        self.source_frame.grid_rowconfigure(0, weight=1)  # Center vertically
         self.source_frame.grid_columnconfigure(1, weight=1)
         
+        # Label - vertically centered
         tk.Label(
             self.source_frame,
             text="Source Folder:",
@@ -234,8 +236,9 @@ class CodebaseCompilerApp:
             bg=self.colors['surface'],
             fg=self.colors['accent'],
             anchor='w'
-        ).grid(row=0, column=0, sticky="w", padx=15, pady=20)
+        ).grid(row=0, column=0, sticky="w", padx=15, pady=0)
         
+        # Entry field - vertically centered
         self.folder_path_var = tk.StringVar()
         self.folder_entry = tk.Entry(
             self.source_frame,
@@ -247,8 +250,9 @@ class CodebaseCompilerApp:
             relief=tk.FLAT,
             highlightthickness=0
         )
-        self.folder_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10), pady=20, ipady=8)
+        self.folder_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10), pady=0, ipady=8)
         
+        # Button - vertically centered
         self.select_folder_btn = tk.Button(
             self.source_frame,
             text="Select Folder",
@@ -261,7 +265,7 @@ class CodebaseCompilerApp:
             cursor='hand2',
             command=self.select_folder
         )
-        self.select_folder_btn.grid(row=0, column=2, padx=(0, 15), pady=20, ipadx=15, ipady=6)
+        self.select_folder_btn.grid(row=0, column=2, padx=(0, 15), pady=0, ipadx=15, ipady=6)
         
         # File tree section
         self.tree_container = tk.Frame(self.main_container, bg=self.colors['surface'])
@@ -310,7 +314,7 @@ class CodebaseCompilerApp:
         self.vsb.config(command=self.tree.yview)
         self.hsb.config(command=self.tree.xview)
         
-        # Merged status bar frame (replaces both loading_frame and status_frame)
+        # Merged status bar frame
         self.status_bar = tk.Frame(self.tree_container, bg=self.colors['surface'], height=30)
         self.status_bar.grid(row=1, column=0, sticky="ew", padx=15, pady=(0, 15))
         self.status_bar.grid_propagate(False)
@@ -327,7 +331,7 @@ class CodebaseCompilerApp:
         )
         self.status_label.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
-        # Right side container (for either cancel button or file count)
+        # Right side container
         self.right_status_container = tk.Frame(self.status_bar, bg=self.colors['surface'])
         self.right_status_container.pack(side=tk.RIGHT, fill=tk.Y)
         
@@ -342,7 +346,7 @@ class CodebaseCompilerApp:
         )
         self.file_count_label.pack(side=tk.RIGHT, padx=(0, 0))
         
-        # Cancel loading button (hidden by default)
+        # Cancel loading button
         self.cancel_btn = tk.Button(
             self.right_status_container,
             text="Cancel Loading",
@@ -356,13 +360,18 @@ class CodebaseCompilerApp:
             command=self.cancel_loading
         )
         
-        # Output settings section - FIXED HEIGHT
+        # Output settings section - FIXED HEIGHT WITH VERTICALLY CENTERED CONTENT
         self.output_frame = tk.Frame(self.main_container, bg=self.colors['surface'], height=120)
         self.output_frame.grid(row=3, column=0, sticky="ew", pady=(0, 10))
-        self.output_frame.grid_propagate(False)  # Prevents shrinking
+        self.output_frame.grid_propagate(False)
+        
+        # Configure rows for vertical centering in output frame
+        self.output_frame.grid_rowconfigure(0, weight=1)  # Output directory row
+        self.output_frame.grid_rowconfigure(1, weight=1)  # Filename row
+        self.output_frame.grid_rowconfigure(2, weight=1)  # Path display row
         self.output_frame.grid_columnconfigure(1, weight=1)
         
-        # Output directory
+        # Output directory - vertically centered
         tk.Label(
             self.output_frame,
             text="Output Directory:",
@@ -370,7 +379,7 @@ class CodebaseCompilerApp:
             bg=self.colors['surface'],
             fg=self.colors['accent'],
             anchor='w'
-        ).grid(row=0, column=0, sticky="w", padx=15, pady=(20, 5))
+        ).grid(row=0, column=0, sticky="w", padx=15, pady=5)
         
         self.output_dir_var = tk.StringVar()
         output_dir_entry = tk.Entry(
@@ -383,7 +392,7 @@ class CodebaseCompilerApp:
             relief=tk.FLAT,
             highlightthickness=0
         )
-        output_dir_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10), pady=(20, 5), ipady=6)
+        output_dir_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10), pady=5, ipady=6)
         
         self.select_output_btn = tk.Button(
             self.output_frame,
@@ -397,9 +406,9 @@ class CodebaseCompilerApp:
             cursor='hand2',
             command=self.select_output_dir
         )
-        self.select_output_btn.grid(row=0, column=2, padx=(0, 15), pady=(20, 5), ipadx=10, ipady=4)
+        self.select_output_btn.grid(row=0, column=2, padx=(0, 15), pady=5, ipadx=10, ipady=4)
         
-        # Output filename
+        # Output filename - vertically centered
         tk.Label(
             self.output_frame,
             text="Output Filename:",
@@ -407,7 +416,7 @@ class CodebaseCompilerApp:
             bg=self.colors['surface'],
             fg=self.colors['accent'],
             anchor='w'
-        ).grid(row=1, column=0, sticky="w", padx=15, pady=(0, 20))
+        ).grid(row=1, column=0, sticky="w", padx=15, pady=5)
         
         self.output_file_var = tk.StringVar(value="codebase.txt")
         output_file_entry = tk.Entry(
@@ -420,10 +429,10 @@ class CodebaseCompilerApp:
             relief=tk.FLAT,
             highlightthickness=0
         )
-        output_file_entry.grid(row=1, column=1, sticky="ew", padx=(0, 10), pady=(0, 20), ipady=6)
+        output_file_entry.grid(row=1, column=1, sticky="ew", padx=(0, 10), pady=5, ipady=6)
         output_file_entry.bind('<KeyRelease>', self.update_full_output_path)
         
-        # Full path display
+        # Full path display - vertically centered
         self.full_output_path_var = tk.StringVar()
         self.path_display = tk.Label(
             self.output_frame,
@@ -432,20 +441,32 @@ class CodebaseCompilerApp:
             bg=self.colors['surface'],
             fg=self.colors['text_secondary']
         )
-        self.path_display.grid(row=2, column=0, columnspan=3, sticky="w", padx=15, pady=(0, 20))
+        self.path_display.grid(row=2, column=0, columnspan=3, sticky="w", padx=15, pady=5)
         
-        # Action buttons section - FIXED HEIGHT
-        self.buttons_frame = tk.Frame(self.main_container, bg=self.colors['background'], height=70)
+        # Action buttons section - FIXED HEIGHT WITH VERTICALLY CENTERED CONTENT
+        self.buttons_frame = tk.Frame(self.main_container, bg=self.colors['background'], height=65)  # Reduced from 70 to 65
         self.buttons_frame.grid(row=4, column=0, sticky="ew", pady=(0, 10))
-        self.buttons_frame.grid_propagate(False)  # Prevents shrinking
+        self.buttons_frame.grid_propagate(False)
         
-        # Left action buttons
-        left_buttons = tk.Frame(self.buttons_frame, bg=self.colors['background'])
-        left_buttons.place(relx=0, rely=0.5, anchor='w', y=0)
+        # Configure grid for proper left/right distribution
+        self.buttons_frame.grid_columnconfigure(0, weight=1)  # Left side
+        self.buttons_frame.grid_columnconfigure(1, weight=0)  # Right side (fixed width)
+        
+        # Left side container for control buttons
+        left_buttons_container = tk.Frame(self.buttons_frame, bg=self.colors['background'])
+        left_buttons_container.grid(row=0, column=0, sticky="w", padx=(0, 20))
+        
+        # Right side container for compile button
+        right_buttons_container = tk.Frame(self.buttons_frame, bg=self.colors['background'])
+        right_buttons_container.grid(row=0, column=1, sticky="e")
+        
+        # Control buttons (left side) - aligned to top with padding
+        control_buttons_frame = tk.Frame(left_buttons_container, bg=self.colors['background'])
+        control_buttons_frame.pack(side=tk.TOP, fill=tk.X, expand=False, pady=(8, 0))  # 8px padding at top
         
         # Action buttons
         self.refresh_btn = tk.Button(
-            left_buttons,
+            control_buttons_frame,
             text="Refresh",
             font=('Segoe UI', 10, 'bold'),
             bg=self.colors['divider'],
@@ -460,7 +481,7 @@ class CodebaseCompilerApp:
         self.refresh_btn.pack(side=tk.LEFT, padx=(0, 10), ipadx=15, ipady=6)
         
         self.check_all_btn = tk.Button(
-            left_buttons,
+            control_buttons_frame,
             text="Check All",
             font=('Segoe UI', 10, 'bold'),
             bg=self.colors['divider'],
@@ -475,7 +496,7 @@ class CodebaseCompilerApp:
         self.check_all_btn.pack(side=tk.LEFT, padx=(0, 10), ipadx=15, ipady=6)
         
         self.uncheck_all_btn = tk.Button(
-            left_buttons,
+            control_buttons_frame,
             text="Uncheck All",
             font=('Segoe UI', 10, 'bold'),
             bg=self.colors['divider'],
@@ -489,9 +510,12 @@ class CodebaseCompilerApp:
         )
         self.uncheck_all_btn.pack(side=tk.LEFT, ipadx=15, ipady=6)
         
-        # Main compile button
+        # Main compile button (right side) - aligned to top with less bottom padding
+        compile_button_frame = tk.Frame(right_buttons_container, bg=self.colors['background'])
+        compile_button_frame.pack(side=tk.TOP, fill=tk.X, expand=False, pady=(8, 2))  # 8px top, 2px bottom
+        
         self.compile_btn = tk.Button(
-            self.buttons_frame,
+            compile_button_frame,
             text="Compile Selected Files",
             font=('Segoe UI', 12, 'bold'),
             bg=self.colors['primary'],
@@ -503,22 +527,26 @@ class CodebaseCompilerApp:
             command=self.compile_selected,
             state='normal'
         )
-        self.compile_btn.place(relx=1.0, rely=0.5, anchor='e', x=0, y=0)
+        self.compile_btn.pack(side=tk.RIGHT, ipadx=30, ipady=8)
         
-        # Progress bar section - FIXED HEIGHT
+        # Progress bar section
         self.progress_frame = tk.Frame(self.main_container, bg=self.colors['background'], height=30)
         self.progress_frame.grid(row=5, column=0, sticky="ew")
-        self.progress_frame.grid_propagate(False)  # Prevents shrinking
+        self.progress_frame.grid_propagate(False)
+        
+        # Center progress bar vertically
+        progress_inner = tk.Frame(self.progress_frame, bg=self.colors['background'])
+        progress_inner.place(relx=0.5, rely=0.5, anchor='center', relwidth=1.0)
         
         self.progress_var = tk.DoubleVar()
         self.progress_bar = ttk.Progressbar(
-            self.progress_frame,
+            progress_inner,
             variable=self.progress_var,
             mode='determinate',
             length=100
         )
-        self.progress_bar.pack(fill=tk.X, expand=True, padx=0, pady=10)
-        self.progress_frame.grid_remove()  # Hide initially
+        self.progress_bar.pack(fill=tk.X, expand=True)
+        self.progress_frame.grid_remove()
         
         # Configure styles
         self._configure_styles()
