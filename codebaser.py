@@ -309,23 +309,41 @@ class CodebaseCompilerApp:
         self.vsb.config(command=self.tree.yview)
         self.hsb.config(command=self.tree.xview)
         
-        # Loading indicator frame
-        self.loading_frame = tk.Frame(self.tree_container, bg=self.colors['surface'])
-        self.loading_frame.grid(row=1, column=0, sticky="ew", padx=15, pady=(0, 15))
+        # Merged status bar frame (replaces both loading_frame and status_frame)
+        self.status_bar = tk.Frame(self.tree_container, bg=self.colors['surface'], height=30)
+        self.status_bar.grid(row=1, column=0, sticky="ew", padx=15, pady=(0, 15))
+        self.status_bar.grid_propagate(False)
         
-        # Loading label
-        self.loading_label = tk.Label(
-            self.loading_frame,
-            text="",
+        # Left side: Status text
+        self.status_var = tk.StringVar(value="Ready to select folder")
+        self.status_label = tk.Label(
+            self.status_bar,
+            textvariable=self.status_var,
             font=('Segoe UI', 9),
+            bg=self.colors['surface'],
+            fg=self.colors['text_secondary'],
+            anchor='w'
+        )
+        self.status_label.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        # Right side container (for either cancel button or file count)
+        self.right_status_container = tk.Frame(self.status_bar, bg=self.colors['surface'])
+        self.right_status_container.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # File count label (shown when not loading)
+        self.file_count_var = tk.StringVar(value="Files: 0")
+        self.file_count_label = tk.Label(
+            self.right_status_container,
+            textvariable=self.file_count_var,
+            font=('Segoe UI', 9, 'bold'),
             bg=self.colors['surface'],
             fg=self.colors['accent']
         )
-        self.loading_label.pack(side=tk.LEFT, fill=tk.Y)
+        self.file_count_label.pack(side=tk.RIGHT, padx=(0, 0))
         
         # Cancel loading button (hidden by default)
         self.cancel_btn = tk.Button(
-            self.loading_frame,
+            self.right_status_container,
             text="Cancel Loading",
             font=('Segoe UI', 9, 'bold'),
             bg=self.colors['stop'],
@@ -336,35 +354,10 @@ class CodebaseCompilerApp:
             cursor='hand2',
             command=self.cancel_loading
         )
-        # Don't pack it yet - will be shown when loading
-        
-        # Status and count labels
-        self.status_frame = tk.Frame(self.main_container, bg=self.colors['surface'])
-        self.status_frame.grid(row=3, column=0, sticky="ew", pady=(0, 10))
-        
-        self.status_var = tk.StringVar(value="Ready to select folder")
-        self.status_label = tk.Label(
-            self.status_frame,
-            textvariable=self.status_var,
-            font=('Segoe UI', 9),
-            bg=self.colors['surface'],
-            fg=self.colors['text_secondary']
-        )
-        self.status_label.pack(side=tk.LEFT, padx=15, pady=10, fill=tk.Y)
-        
-        self.file_count_var = tk.StringVar(value="Files: 0")
-        self.file_count_label = tk.Label(
-            self.status_frame,
-            textvariable=self.file_count_var,
-            font=('Segoe UI', 9, 'bold'),
-            bg=self.colors['surface'],
-            fg=self.colors['accent']
-        )
-        self.file_count_label.pack(side=tk.RIGHT, padx=15, pady=10, fill=tk.Y)
         
         # Output settings section
         output_frame = tk.Frame(self.main_container, bg=self.colors['surface'])
-        output_frame.grid(row=4, column=0, sticky="ew", pady=(0, 10))
+        output_frame.grid(row=3, column=0, sticky="ew", pady=(0, 10))
         output_frame.grid_columnconfigure(1, weight=1)
         
         # Output directory
@@ -441,7 +434,7 @@ class CodebaseCompilerApp:
         
         # Action buttons section
         buttons_frame = tk.Frame(self.main_container, bg=self.colors['background'])
-        buttons_frame.grid(row=5, column=0, sticky="ew", pady=(0, 10))
+        buttons_frame.grid(row=4, column=0, sticky="ew", pady=(0, 10))
         
         # Left action buttons
         left_buttons = tk.Frame(buttons_frame, bg=self.colors['background'])
@@ -511,7 +504,7 @@ class CodebaseCompilerApp:
         
         # Progress bar section
         self.progress_frame = tk.Frame(self.main_container, bg=self.colors['background'])
-        self.progress_frame.grid(row=6, column=0, sticky="ew")
+        self.progress_frame.grid(row=5, column=0, sticky="ew")
         
         self.progress_var = tk.DoubleVar()
         self.progress_bar = ttk.Progressbar(
@@ -665,11 +658,8 @@ class CodebaseCompilerApp:
         # Clear existing tree
         self.clear_tree()
         
-        # Show loading indicator
-        self.show_loading_indicator("Scanning directory...")
-        
-        # Update the status label (next to file count) to show "Loading..."
-        self.status_var.set("Loading...")
+        # Show loading state in status bar
+        self.show_loading_state("Scanning directory...")
         
         # Set loading flag
         self.is_loading = True
@@ -799,16 +789,24 @@ class CodebaseCompilerApp:
             self.tree.delete(item)
         self.file_items.clear()
 
-    def show_loading_indicator(self, message):
-        """Show loading indicator with cancel button."""
-        self.loading_label.config(text=message)
-        self.cancel_btn.pack(side=tk.RIGHT, padx=(10, 0), ipadx=10, ipady=3)
-        self.loading_frame.update()
+    def show_loading_state(self, message):
+        """Show loading state in the status bar."""
+        # Update status text
+        self.status_var.set(message)
+        
+        # Hide file count label
+        self.file_count_label.pack_forget()
+        
+        # Show cancel button
+        self.cancel_btn.pack(side=tk.RIGHT, padx=(10, 0), ipadx=10, ipady=2)
 
-    def hide_loading_indicator(self):
-        """Hide loading indicator."""
-        self.loading_label.config(text="")
+    def show_normal_state(self):
+        """Show normal state in the status bar (not loading)."""
+        # Hide cancel button
         self.cancel_btn.pack_forget()
+        
+        # Show file count label
+        self.file_count_label.pack(side=tk.RIGHT, padx=(0, 0))
 
     def cancel_loading(self):
         """Cancel the current loading operation."""
@@ -816,7 +814,7 @@ class CodebaseCompilerApp:
             self.stop_loading_flag = True
             self.is_loading = False
             self.queue.put(('loading_cancelled', None))
-            self.hide_loading_indicator()
+            self.show_normal_state()
             self.set_buttons_state('normal')
             self.status_var.set("Loading cancelled")
 
@@ -856,29 +854,30 @@ class CodebaseCompilerApp:
                     }
                     
                 elif msg_type == 'loading_progress':
-                    self.loading_label.config(text=message)
+                    # Update status text with loading progress
+                    self.status_var.set(message)
                     
                 elif msg_type == 'loading_complete':
                     self.is_loading = False
-                    self.hide_loading_indicator()
+                    self.show_normal_state()
                     self.set_buttons_state('normal')
                     self.update_file_count()
-                    # Update the status label to show completion message
+                    # Update the status text
                     self.status_var.set(f"Loaded folder: {self.current_folder.name}")
                     
                 elif msg_type == 'loading_cancelled':
                     self.is_loading = False
-                    self.hide_loading_indicator()
+                    self.show_normal_state()
                     self.set_buttons_state('normal')
-                    # Update the status label to show cancelled message
+                    # Update the status text
                     self.status_var.set("Loading cancelled")
                     
                 elif msg_type == 'loading_error':
                     self.is_loading = False
-                    self.hide_loading_indicator()
+                    self.show_normal_state()
                     self.set_buttons_state('normal')
                     messagebox.showerror("Error", f"Failed to load folder: {message}")
-                    # Update the status label to show error message
+                    # Update the status text
                     self.status_var.set("Error loading folder")
                     
                 elif msg_type == 'loading_warning':
@@ -886,6 +885,7 @@ class CodebaseCompilerApp:
                     print(f"Warning: {message}")
                     
                 elif msg_type == 'status':
+                    # Regular status updates (used during compilation)
                     self.status_var.set(message)
                     
                 elif msg_type == 'progress':
