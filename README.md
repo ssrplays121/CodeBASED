@@ -1,5 +1,7 @@
 # codeBASED: Codebase Compiler 📦
 
+**codeBASED** - Code based in reality for all your context needs.
+
 A simple desktop application for compiling your entire codebase into a single, organized text file. Perfect for AI analysis, code review, archiving, or sharing complete project context.
 
 ## ✨ Features
@@ -172,6 +174,3 @@ Having issues or questions?
 - **Create Issue**: Report bugs or request features
 - **Email**: For direct contact (if provided)
 
----
-
-**codeBASED** - Code based in reality for all your context needs.
