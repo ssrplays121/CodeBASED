@@ -1,0 +1,4 @@
+codebase.txt
+
+*.pyc
+__pycache__
