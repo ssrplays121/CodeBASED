@@ -2,3 +2,8 @@ codebase.txt
 
 *.pyc
 __pycache__
+
+/codebaser.build/
+/codebaser.dist/
+
+codebaser.bin
