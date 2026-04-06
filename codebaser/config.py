@@ -21,7 +21,7 @@ COLORS = {
 DEFAULT_OUTPUT_FILENAME = "codebase.txt"
 
 # Skip hidden files/folders (starting with '.')
-EXCLUDED_PREFIXES = ('.',)
+EXCLUDED_PREFIXES = ()
 
 # File extension to emoji mapping
 ICON_MAP = {
