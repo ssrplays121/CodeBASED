@@ -71,7 +71,9 @@ class CheckboxTreeview(ttk.Treeview):
             self.mixed_icon.put("#1B211A", (x, 9))
 
     def _handle_click(self, event):
-        """Handle single click to toggle checkbox."""
+        """Handle single click to toggle checkbox (not on the expand arrow)."""
+        if "indicator" in self.identify_element(event.x, event.y):
+            return  # let ttk handle the expand/collapse arrow itself
         region = self.identify("region", event.x, event.y)
         if region == "tree":
             item = self.identify("item", event.x, event.y)
@@ -79,7 +81,9 @@ class CheckboxTreeview(ttk.Treeview):
                 self.toggle_check(item)
 
     def _handle_double_click(self, event):
-        """Handle double click to expand/collapse folders."""
+        """Handle double click on a folder row to expand/collapse it."""
+        if "indicator" in self.identify_element(event.x, event.y):
+            return  # single click on the arrow already handles this
         region = self.identify("region", event.x, event.y)
         if region == "tree":
             item = self.identify("item", event.x, event.y)

@@ -28,6 +28,7 @@ class MainWindow:
         self.status_var = tk.StringVar(value="Ready to select folder")
         self.file_count_var = tk.StringVar(value="Files: 0")
         self.progress_var = tk.DoubleVar()
+        self.header_all_checked = False  # tracks the header checkbox state
         
         # Configure root grid
         self.root.grid_columnconfigure(0, weight=1)
@@ -247,7 +248,8 @@ class MainWindow:
         self.tree.tag_configure('evenrow', background=COLORS['divider'])
         self.tree.tag_configure('oddrow', background=COLORS['surface'])
         
-        self.tree.heading("#0", text="File/Folder", anchor=tk.W)
+        self.tree.heading("#0", text="☐  File/Folder", anchor=tk.W,
+                          command=self._toggle_header_check)
         self.tree.heading("path", text="Path", anchor=tk.W)
         self.tree.heading("size", text="Size", anchor=tk.E)
         self.tree.heading("modified", text="Last Modified", anchor=tk.W)
@@ -339,6 +341,7 @@ class MainWindow:
     def check_all(self):
         for item in self.tree.get_children():
             self._check_recursive(item)
+        self.set_header_check_state(True)
     
     def _check_recursive(self, item_id):
         self.tree.item(item_id, tags=("checked",))
@@ -348,11 +351,24 @@ class MainWindow:
     def uncheck_all(self):
         for item in self.tree.get_children():
             self._uncheck_recursive(item)
+        self.set_header_check_state(False)
     
     def _uncheck_recursive(self, item_id):
         self.tree.item(item_id, tags=("unchecked",))
         for child in self.tree.get_children(item_id):
             self._uncheck_recursive(child)
+    
+    def _toggle_header_check(self):
+        """Header checkbox beside 'File/Folder': one click checks/unchecks everything."""
+        if self.header_all_checked:
+            self.controller.uncheck_all()
+        else:
+            self.controller.check_all()
+    
+    def set_header_check_state(self, checked: bool):
+        self.header_all_checked = checked
+        box = "☑" if checked else "☐"
+        self.tree.heading("#0", text=f"{box}  File/Folder")
     
     def get_output_settings(self):
         return self.output_dir_var.get().strip(), self.output_file_var.get().strip()
