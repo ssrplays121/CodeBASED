@@ -46,7 +46,7 @@
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/codebased.git
+git clone https://github.com/ssrplays121/codebased.git
 cd codebased
 ```
 
