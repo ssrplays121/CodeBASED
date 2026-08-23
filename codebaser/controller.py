@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Dict, Any
 
 from config import COLORS, DEFAULT_OUTPUT_FILENAME
-from scanner import DirectoryScanner, format_size
+from scanner import DirectoryScanner, format_size, is_supported_file, is_sensitive_file
 from compiler import compile_files
 from dialogs import InfoDialog, WarningDialog, ErrorDialog, ConfirmDialog
 
@@ -110,6 +110,42 @@ class CodebaseController:
             self.ui.set_output_filename(output_file)
         
         full_output_path = os.path.join(output_dir, output_file)
+        
+        # Guard: the output file itself can't be a valid input (it gets
+        # truncated to empty the moment compilation starts writing to it).
+        if any(os.path.abspath(f) == os.path.abspath(full_output_path) for f in selected_files):
+            self._show_warning(
+                "Output File Selected",
+                f"'{output_file}' is the compilation output and can't also be an input file.",
+                "Please uncheck it in the tree and try again."
+            )
+            return
+        
+        sensitive_files = [f for f in selected_files if is_sensitive_file(f)]
+        if sensitive_files:
+            names = "\n".join(f"• {f.name}" for f in sensitive_files[:10])
+            if len(sensitive_files) > 10:
+                names += f"\n... and {len(sensitive_files) - 10} more"
+            proceed = ConfirmDialog(
+                self.ui.root, COLORS, "Sensitive Files Selected",
+                "🔒 The following selected files may contain secrets or credentials:\n\n"
+                f"{names}\n\nInclude them in the compiled output anyway?"
+            ).show()
+            if not proceed:
+                return
+        
+        unsupported_files = [f for f in selected_files if not is_supported_file(f)]
+        if unsupported_files:
+            names = "\n".join(f"• {f.name}" for f in unsupported_files[:10])
+            if len(unsupported_files) > 10:
+                names += f"\n... and {len(unsupported_files) - 10} more"
+            proceed = ConfirmDialog(
+                self.ui.root, COLORS, "Unsupported File Type",
+                "⚠️ The following selected files are binary/non-text and may not "
+                f"compile cleanly:\n\n{names}\n\nInclude them anyway?"
+            ).show()
+            if not proceed:
+                return
         
         confirm = ConfirmDialog(self.ui.root, COLORS, "Confirm Compilation",
                                 f"📦 You are about to compile {len(selected_files)} files\n\n"

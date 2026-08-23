@@ -20,8 +20,33 @@ COLORS = {
 # Default output filename
 DEFAULT_OUTPUT_FILENAME = "codebase.txt"
 
-# Skip hidden files/folders (starting with '.')
-EXCLUDED_PREFIXES = ()
+# Hidden files/folders start with these prefixes.
+HIDDEN_PREFIXES = ('.',)
+
+# Whether hidden files/folders (.env, .git, etc.) are shown in the tree.
+SHOW_HIDDEN_FILES = True
+
+# Binary/non-text extensions. Selecting one of these warns before compiling.
+UNSUPPORTED_EXTENSIONS = {
+    '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.ico', '.svg', '.webp',
+    '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+    '.zip', '.tar', '.gz', '.7z', '.rar',
+    '.exe', '.dll', '.so', '.dylib', '.bin', '.o', '.obj', '.class',
+    '.mp3', '.mp4', '.wav', '.avi', '.mov', '.mkv',
+    '.ttf', '.otf', '.woff', '.woff2',
+    '.db', '.sqlite', '.sqlite3', '.pyc', '.pyo',
+}
+
+# Filenames/extensions/keywords that usually hold secrets. Selecting one
+# of these warns before compiling.
+SENSITIVE_FILE_NAMES = {
+    '.env', '.env.local', '.env.development', '.env.production', '.env.test',
+    '.npmrc', '.pypirc', '.netrc', '.htpasswd',
+    'id_rsa', 'id_dsa', 'id_ecdsa', 'id_ed25519',
+    'credentials', 'credentials.json', 'secrets.json', 'secrets.yaml', 'secrets.yml',
+}
+SENSITIVE_EXTENSIONS = {'.pem', '.key', '.pfx', '.p12', '.crt', '.cer'}
+SENSITIVE_KEYWORDS = ('secret', 'credential', 'password', 'apikey', 'api_key', 'token')
 
 # File extension to emoji mapping
 ICON_MAP = {

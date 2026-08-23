@@ -5,13 +5,34 @@ import time
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Callable, Any
 
-from config import ICON_MAP, EXCLUDED_PREFIXES
+from config import (ICON_MAP, HIDDEN_PREFIXES, SHOW_HIDDEN_FILES,
+                     UNSUPPORTED_EXTENSIONS, SENSITIVE_FILE_NAMES,
+                     SENSITIVE_EXTENSIONS, SENSITIVE_KEYWORDS)
 
 
 def get_file_icon(filename: str) -> str:
     """Get appropriate emoji icon for file type."""
     ext = os.path.splitext(filename)[1].lower()
     return ICON_MAP.get(ext, '📄')
+
+
+def _is_hidden(name: str) -> bool:
+    return name.startswith(HIDDEN_PREFIXES)
+
+
+def is_supported_file(path) -> bool:
+    """False for binary/non-text extensions we can't usefully compile."""
+    return os.path.splitext(str(path))[1].lower() not in UNSUPPORTED_EXTENSIONS
+
+
+def is_sensitive_file(path) -> bool:
+    """True for filenames that commonly hold secrets/credentials."""
+    name = os.path.basename(str(path)).lower()
+    if name in SENSITIVE_FILE_NAMES or name.startswith('.env'):
+        return True
+    if os.path.splitext(name)[1].lower() in SENSITIVE_EXTENSIONS:
+        return True
+    return any(keyword in name for keyword in SENSITIVE_KEYWORDS)
 
 
 def format_size(size_in_bytes: int) -> str:
@@ -57,9 +78,10 @@ class DirectoryScanner:
             if self.stop_flag():
                 return {'items': {}, 'total_folders': 0, 'total_files': 0, 'cancelled': True}
             
-            # Filter out hidden directories
-            dirs[:] = [d for d in dirs if not d.startswith(EXCLUDED_PREFIXES)]
-            files = [f for f in files if not f.startswith(EXCLUDED_PREFIXES)]
+            # Filter out hidden directories/files unless hidden items are enabled
+            if not SHOW_HIDDEN_FILES:
+                dirs[:] = [d for d in dirs if not _is_hidden(d)]
+                files = [f for f in files if not _is_hidden(f)]
             
             total_folders += len(dirs)
             total_files += len(files)
@@ -86,7 +108,7 @@ class DirectoryScanner:
             for entry in current_path.iterdir():
                 if self.stop_flag():
                     return
-                if entry.name.startswith(EXCLUDED_PREFIXES):
+                if not SHOW_HIDDEN_FILES and _is_hidden(entry.name):
                     continue
                 entries.append(entry)
             
