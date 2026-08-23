@@ -18,7 +18,6 @@ class CheckboxTreeview(ttk.Treeview):
 
         # Bind click events
         self.bind("<Button-1>", self._handle_click)
-        self.bind("<Double-1>", self._handle_double_click)
 
     def _create_checkbox_images(self):
         """Create checkbox images using canvas."""
@@ -71,26 +70,16 @@ class CheckboxTreeview(ttk.Treeview):
             self.mixed_icon.put("#1B211A", (x, 9))
 
     def _handle_click(self, event):
-        """Handle single click to toggle checkbox (not on the expand arrow)."""
+        """Single click toggles checkbox."""
         if "indicator" in self.identify_element(event.x, event.y):
-            return  # let ttk handle the expand/collapse arrow itself
+            return  # arrow: let ttk's own single-click open/close run, untouched
         region = self.identify("region", event.x, event.y)
-        if region == "tree":
-            item = self.identify("item", event.x, event.y)
-            if item:
-                self.toggle_check(item)
-
-    def _handle_double_click(self, event):
-        """Handle double click on a folder row to expand/collapse it."""
-        if "indicator" in self.identify_element(event.x, event.y):
-            return  # single click on the arrow already handles this
-        region = self.identify("region", event.x, event.y)
-        if region == "tree":
-            item = self.identify("item", event.x, event.y)
-            if item and self.item(item, "open"):
-                self.item(item, open=False)
-            elif item:
-                self.item(item, open=True)
+        if region != "tree":
+            return
+        item = self.identify("item", event.x, event.y)
+        if not item:
+            return
+        self.toggle_check(item)
 
     def toggle_check(self, item):
         """Toggle checkbox state for an item."""
