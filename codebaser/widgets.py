@@ -5,10 +5,11 @@ from tkinter import ttk
 
 class CheckboxTreeview(ttk.Treeview):
     """Custom Treeview with checkboxes."""
-    def __init__(self, master=None, **kw):
+    def __init__(self, master=None, header_state_callback=None, **kw):
         super().__init__(master, **kw)
 
         # Create checkbox images
+        self.header_state_callback = header_state_callback
         self._create_checkbox_images()
 
         # Configure tags for checked/unchecked states
@@ -69,57 +70,111 @@ class CheckboxTreeview(ttk.Treeview):
             self.mixed_icon.put("#1B211A", (x, 8))
             self.mixed_icon.put("#1B211A", (x, 9))
 
+    def _set_check_state(self, item, state):
+        tags = list(self.item(item, "tags"))
+        tags = [t for t in tags if t not in ("checked", "unchecked", "mixed")]
+        tags.append(state)
+        self.item(item, tags=tuple(tags))
+
+    def set_header_checkbox(self, state):
+        state = state or "unchecked"
+        image = {
+            "checked": self.checked_icon,
+            "mixed": self.mixed_icon,
+            "unchecked": self.unchecked_icon
+        }.get(state, self.unchecked_icon)
+        self.heading("#0", image=image, text="  File/Folder", anchor=tk.W)
+        self._header_state = state
+        if self.header_state_callback:
+            self.header_state_callback(state)
+
+    def update_header_checkbox(self):
+        root_children = self.get_children()
+        if not root_children:
+            state = "unchecked"
+        else:
+            all_checked = all("checked" in self.item(c, "tags") for c in root_children)
+            any_checked = any(
+                "checked" in self.item(c, "tags") or "mixed" in self.item(c, "tags")
+                for c in root_children
+            )
+            if all_checked:
+                state = "checked"
+            elif not any_checked:
+                state = "unchecked"
+            else:
+                state = "mixed"
+        self.set_header_checkbox(state)
+
+    def set_item_check_state(self, item, checked):
+        self._set_check_state(item, "checked" if checked else "unchecked")
+
     def _handle_click(self, event):
-        """Single click toggles checkbox."""
-        if "indicator" in self.identify_element(event.x, event.y):
-            return  # arrow: let ttk's own single-click open/close run, untouched
         region = self.identify("region", event.x, event.y)
         if region != "tree":
             return
         item = self.identify("item", event.x, event.y)
         if not item:
             return
-        self.toggle_check(item)
+
+        element = self.identify_element(event.x, event.y)
+        tags = self.item(item, "tags")
+        is_folder = "folder" in tags
+        is_file = "file" in tags
+
+        if element == "image":
+            self.toggle_check(item)
+            return
+
+        if element == "indicator":
+            if is_folder:
+                self.item(item, open=not self.item(item, "open"))
+            return
+
+        if is_folder:
+            self.item(item, open=not self.item(item, "open"))
+        elif is_file:
+            self.toggle_check(item)
+            self.selection_set(item)
+            self.focus(item)
+            self.see(item)
 
     def toggle_check(self, item):
-        """Toggle checkbox state for an item."""
+        """Toggle checkbox state."""
         current_tags = self.item(item, "tags")
-        if "checked" in current_tags:
-            self.item(item, tags=("unchecked",))
-            self._propagate_check_state(item, False)
-        else:
-            self.item(item, tags=("checked",))
-            self._propagate_check_state(item, True)
+        checked = "checked" not in current_tags
+        self._set_check_state(item, "checked" if checked else "unchecked")
+        self._propagate_check_state(item, checked)
+        self.update_header_checkbox()
 
     def _propagate_check_state(self, item, checked):
-        """Propagate check state to children and update parent state."""
-        # Update children
         children = self.get_children(item)
         for child in children:
-            self.item(child, tags=("checked",) if checked else ("unchecked",))
+            self._set_check_state(child, "checked" if checked else "unchecked")
             self._propagate_check_state(child, checked)
 
-        # Update parent if needed
         parent = self.parent(item)
         if parent and parent != "":
             self._update_parent_check_state(parent)
 
     def _update_parent_check_state(self, parent):
-        """Update parent checkbox based on children states."""
         children = self.get_children(parent)
         if not children:
             return
 
         all_checked = all("checked" in self.item(child, "tags") for child in children)
-        any_checked = any("checked" in self.item(child, "tags") for child in children)
+        any_checked = any(
+            "checked" in self.item(child, "tags") or "mixed" in self.item(child, "tags")
+            for child in children
+        )
         all_unchecked = all("unchecked" in self.item(child, "tags") for child in children)
 
         if all_checked:
-            self.item(parent, tags=("checked",))
+            self._set_check_state(parent, "checked")
         elif all_unchecked:
-            self.item(parent, tags=("unchecked",))
+            self._set_check_state(parent, "unchecked")
         else:
-            self.item(parent, tags=("mixed",))
+            self._set_check_state(parent, "mixed")
 
     def get_checked_items(self):
         """Get all checked items."""

@@ -116,9 +116,14 @@ class MainWindow:
         self.vsb = ttk.Scrollbar(tree_inner, orient="vertical")
         self.hsb = ttk.Scrollbar(tree_inner, orient="horizontal")
         
-        self.tree = CheckboxTreeview(tree_inner, columns=("path", "size", "modified"),
-                                     show="tree headings", yscrollcommand=self.vsb.set,
-                                     xscrollcommand=self.hsb.set)
+        self.tree = CheckboxTreeview(
+            tree_inner,
+            columns=("path", "size", "modified"),
+            show="tree headings",
+            yscrollcommand=self.vsb.set,
+            xscrollcommand=self.hsb.set,
+            header_state_callback=self._on_tree_header_state_changed
+        )
         self._configure_tree_columns()
         
         self.tree.grid(row=0, column=0, sticky="nsew")
@@ -248,8 +253,8 @@ class MainWindow:
         self.tree.tag_configure('evenrow', background=COLORS['divider'])
         self.tree.tag_configure('oddrow', background=COLORS['surface'])
         
-        self.tree.heading("#0", text="☐  File/Folder", anchor=tk.W,
-                          command=self._toggle_header_check)
+        self.tree.heading("#0", text="  File/Folder", anchor=tk.W, command=self._toggle_header_check)
+        self.tree.set_header_checkbox("unchecked")
         self.tree.heading("path", text="Path", anchor=tk.W)
         self.tree.heading("size", text="Size", anchor=tk.E)
         self.tree.heading("modified", text="Last Modified", anchor=tk.W)
@@ -263,6 +268,15 @@ class MainWindow:
         """Configure ttk styles."""
         style = ttk.Style()
         style.theme_use('clam')
+        style.layout("Treeview.Heading", [
+            ("Treeheading.cell", {"sticky": "nswe"}),
+            ("Treeheading.border", {"sticky": "nswe", "children": [
+                ("Treeheading.padding", {"sticky": "nswe", "children": [
+                    ("Treeheading.image", {"side": "left", "sticky": ""}),
+                    ("Treeheading.text", {"side": "left", "sticky": "w"})
+                ]})
+            ]})
+        ])
         style.configure("Treeview", background=COLORS['divider'], foreground=COLORS['accent'],
                         fieldbackground=COLORS['divider'], borderwidth=0, font=FONT_BODY)
         style.configure("Treeview.Heading", background=COLORS['surface'], foreground=COLORS['accent'],
@@ -344,20 +358,20 @@ class MainWindow:
         self.set_header_check_state(True)
     
     def _check_recursive(self, item_id):
-        self.tree.item(item_id, tags=("checked",))
+        self.tree.set_item_check_state(item_id, True)
         for child in self.tree.get_children(item_id):
             self._check_recursive(child)
-    
+
     def uncheck_all(self):
         for item in self.tree.get_children():
             self._uncheck_recursive(item)
         self.set_header_check_state(False)
     
     def _uncheck_recursive(self, item_id):
-        self.tree.item(item_id, tags=("unchecked",))
+        self.tree.set_item_check_state(item_id, False)
         for child in self.tree.get_children(item_id):
             self._uncheck_recursive(child)
-    
+
     def _toggle_header_check(self):
         """Header checkbox beside 'File/Folder': one click checks/unchecks everything."""
         if self.header_all_checked:
@@ -365,11 +379,15 @@ class MainWindow:
         else:
             self.controller.check_all()
     
-    def set_header_check_state(self, checked: bool):
-        self.header_all_checked = checked
-        box = "☑" if checked else "☐"
-        self.tree.heading("#0", text=f"{box}  File/Folder")
+    def set_header_check_state(self, state):
+        if isinstance(state, bool):
+            state = "checked" if state else "unchecked"
+        self.header_all_checked = (state == "checked")
+        self.tree.set_header_checkbox(state)
     
+    def _on_tree_header_state_changed(self, state):
+        self.header_all_checked = (state == "checked")
+
     def get_output_settings(self):
         return self.output_dir_var.get().strip(), self.output_file_var.get().strip()
     
