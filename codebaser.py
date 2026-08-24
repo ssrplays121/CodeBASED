@@ -1,4 +1,8 @@
-#!/usr/bin/env python3
+"""
+    Deprecated: This file is deprecated and will be removed in future versions. Please use the updated UI and controller modules instead.
+    It is only preserved for quick and easy use from the terminal. 
+    For a more robust and user-friendly experience, please use the main application interface.
+"""
 import os
 import sys
 import tkinter as tk
