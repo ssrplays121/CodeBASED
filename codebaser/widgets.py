@@ -125,24 +125,27 @@ class CheckboxTreeview(ttk.Treeview):
         is_folder = "folder" in tags
         is_file = "file" in tags
 
-        if element == "image":
-            self.toggle_check(item)
-            return
-
-        if element == "indicator":
-            if is_folder:
-                self.item(item, open=not self.item(item, "open"))
-                self.recolor_visible_rows()
-            return
-
-        if is_folder:
+        # Folder: any click except checkbox image toggles open/close
+        if is_folder and element != "image":
             self.item(item, open=not self.item(item, "open"))
             self.recolor_visible_rows()
-        elif is_file:
+            self.selection_set(item)
+            self.focus(item)
+            self.see(item)
+            return "break"
+
+        # Folder: click on checkbox image toggles check only
+        if is_folder and element == "image":
+            self.toggle_check(item)
+            return "break"
+
+        # File: any click toggles checkbox and selects
+        if is_file:
             self.toggle_check(item)
             self.selection_set(item)
             self.focus(item)
             self.see(item)
+            return "break"
 
     def toggle_check(self, item):
         """Toggle checkbox state."""
