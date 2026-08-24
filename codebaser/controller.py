@@ -256,6 +256,7 @@ class CodebaseController:
                     self.ui.show_normal_state()
                     self.ui.set_buttons_state(True)
                     self.ui.set_file_count(data['total_folders'], data['total_files'])
+                    self.ui.tree.recolor_visible_rows()
                     self.ui.set_status(f"Loaded folder: {self.current_folder.name}")
                 elif msg_type == 'loading_cancelled':
                     self.is_loading = False

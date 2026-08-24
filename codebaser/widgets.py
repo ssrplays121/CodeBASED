@@ -19,6 +19,9 @@ class CheckboxTreeview(ttk.Treeview):
 
         # Bind click events
         self.bind("<Button-1>", self._handle_click)
+        # Bind events for expanding/collapsing folders to update header checkbox state
+        self.bind('<<TreeviewOpen>>', self._on_visibility_changed)
+        self.bind('<<TreeviewClose>>', self._on_visibility_changed)
 
     def _create_checkbox_images(self):
         """Create checkbox images using canvas."""
@@ -129,10 +132,12 @@ class CheckboxTreeview(ttk.Treeview):
         if element == "indicator":
             if is_folder:
                 self.item(item, open=not self.item(item, "open"))
+                self.recolor_visible_rows()
             return
 
         if is_folder:
             self.item(item, open=not self.item(item, "open"))
+            self.recolor_visible_rows()
         elif is_file:
             self.toggle_check(item)
             self.selection_set(item)
@@ -190,3 +195,31 @@ class CheckboxTreeview(ttk.Treeview):
             traverse(child)
 
         return checked_items
+
+    def _iter_all(self, parent=''):
+        for child in self.get_children(parent):
+            yield child
+            yield from self._iter_all(child)
+
+    def _iter_visible(self, parent=''):
+        for child in self.get_children(parent):
+            yield child
+            if self.item(child, 'open'):
+                yield from self._iter_visible(child)
+
+    def recolor_visible_rows(self):
+        # Remove old row-color tags everywhere
+        for item in self._iter_all():
+            tags = [t for t in self.item(item, 'tags') if t not in ('evenrow', 'oddrow')]
+            self.item(item, tags=tuple(tags))
+
+        # Assign alternating colors to displayed rows only
+        even = True
+        for item in self._iter_visible():
+            tags = list(self.item(item, 'tags'))
+            tags.append('evenrow' if even else 'oddrow')
+            self.item(item, tags=tuple(tags))
+            even = not even
+
+    def _on_visibility_changed(self, _event):
+        self.recolor_visible_rows()
